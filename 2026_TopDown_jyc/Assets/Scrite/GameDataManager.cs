@@ -39,7 +39,7 @@ public class GameDataManager : MonoBehaviour
 
     public void SaveData(PlayerData playerData)
     {
-        string filePath = Application.persistentDataPath + "player_data.json";
+        string filePath = Application.persistentDataPath + "/player_data.json";
         string json = JsonUtility.ToJson(playerData, true);
         System.IO.File.WriteAllText(filePath, json);
         Debug.Log("게임 데이터 저장됨: " + json);
