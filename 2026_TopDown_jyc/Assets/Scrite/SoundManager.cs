@@ -7,32 +7,35 @@ public class Soundmanager : MonoBehaviour
     public static Soundmanager Instance;
 
     public AudioClip clipBGM;
-   
 
-   
+    public AudioClip click;
+
+
     AudioSource audioSourceBGM;
-
+    AudioSource audioSource;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         Instance = this;
 
-      
+        
         audioSourceBGM = gameObject.AddComponent<AudioSource>();
-      
+        audioSource = gameObject.AddComponent<AudioSource>();
+        PlayBGM();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+            
     }
 
    
 
     public void PlayBGM()
     {
+        Debug.Log("BGM 재생");
         audioSourceBGM.clip = clipBGM;
         audioSourceBGM.loop = true;
         audioSourceBGM.Play();
@@ -55,6 +58,9 @@ public class Soundmanager : MonoBehaviour
     {
         audioSourceBGM.volume = volume;
     }
+    public void PlaySound()
+    {
+        audioSource.PlayOneShot(click);
+    }
 
-    
 }

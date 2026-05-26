@@ -15,21 +15,26 @@ public class TitleManager : MonoBehaviour
 
     public void GameStart()
     {
+        
+ 
         SceneManager.LoadScene("Stage_1");
+        
     }
     private void Awake()
     {
         bgmToggle.onValueChanged.AddListener(OnBGMToggleChange);
         bgmSlider.onValueChanged.AddListener(OnBGMSliderChange);
-       
+
     }
     public void OpenPanel()
     {
+        Soundmanager.Instance.PlaySound();
         HelpPanel.SetActive(true);
 
     }
     public void ClosePanel()
     {
+        Soundmanager.Instance.PlaySound();
         HelpPanel.SetActive(false);
     }
     public void QuitGame()
@@ -42,6 +47,7 @@ public class TitleManager : MonoBehaviour
     }
     private void OnBGMToggleChange(bool isOn)
     {
+        Soundmanager.Instance.PlaySound();
         Soundmanager.Instance.OnOffBGM(isOn);
 
     }
@@ -49,4 +55,5 @@ public class TitleManager : MonoBehaviour
     {
         Soundmanager.Instance.ChangeBGMVolume(volume);
     }
+    
 }
