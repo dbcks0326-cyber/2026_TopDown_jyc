@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb5c08255594ba04186b182f6e20c18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TitleManager
-  HelpPanel: {fileID: 0}
+  HelpPanel: {fileID: 434079212}
   bgmToggle: {fileID: 491616265}
   bgmSlider: {fileID: 971617916}
 --- !u!4 &78581660

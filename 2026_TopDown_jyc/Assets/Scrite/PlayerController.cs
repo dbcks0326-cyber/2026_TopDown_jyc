@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using static UnityEditor.Progress;
 public class PlayerController : MonoBehaviour
@@ -111,5 +112,11 @@ public class PlayerController : MonoBehaviour
 
         }
 
+        if (collision.CompareTag("Respawn"))
+        {
+            
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            return;
+        }
     }
 }
