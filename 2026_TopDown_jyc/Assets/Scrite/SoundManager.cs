@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Rendering;
+using static UnityEngine.Rendering.DebugUI;
 
 public class Soundmanager : MonoBehaviour
 {
@@ -14,7 +15,19 @@ public class Soundmanager : MonoBehaviour
     AudioSource audioSourceBGM;
     AudioSource audioSource;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private void Start()
+    {
+        PlayerData data = GameDataManager.Instance.playerData;
+
+        audioSourceBGM.volume = data.volume;
+
+        if (data.BGM == false)
+        {
+            audioSourceBGM.volume = 0;
+        }
+
+        PlayBGM();
+    }
     void Awake()
     {
         Instance = this;
@@ -22,7 +35,8 @@ public class Soundmanager : MonoBehaviour
         
         audioSourceBGM = gameObject.AddComponent<AudioSource>();
         audioSource = gameObject.AddComponent<AudioSource>();
-        PlayBGM();
+        
+       
     }
 
     // Update is called once per frame
@@ -35,28 +49,44 @@ public class Soundmanager : MonoBehaviour
 
     public void PlayBGM()
     {
-        Debug.Log("BGM 재생");
+        
         audioSourceBGM.clip = clipBGM;
         audioSourceBGM.loop = true;
+        audioSourceBGM.playOnAwake = false;
+
         audioSourceBGM.Play();
     }
 
     public void OnOffBGM(bool isOn)
     {
+        GameDataManager.Instance.playerData.BGM = isOn;
+
         if (isOn)
         {
-            audioSourceBGM.volume = 1;
+            audioSourceBGM.volume = 
+            GameDataManager.Instance.playerData.volume;
         }
         else
         {
             audioSourceBGM.volume = 0;
         }
+
+        GameDataManager.Instance.SaveData(
+        GameDataManager.Instance.playerData
+        );
     }
 
   
     public void ChangeBGMVolume(float volume)
     {
         audioSourceBGM.volume = volume;
+
+        GameDataManager.Instance.playerData.volume = volume;
+
+        GameDataManager.Instance.SaveData(
+        GameDataManager.Instance.playerData
+        );
+
     }
     public void PlaySound()
     {

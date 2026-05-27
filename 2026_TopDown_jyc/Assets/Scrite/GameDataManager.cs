@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using static UnityEditor.Progress;
@@ -18,6 +20,10 @@ public class PlayerData
     public List<string> collectedItems = new List<string>();
 
     public int stage = 1;
+
+    public float volume = 1f;
+    public bool BGM = true;
+    
 }
 
 public class GameDataManager : MonoBehaviour
@@ -30,11 +36,15 @@ public class GameDataManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            playerData = LoadData();
         }
         else
         {
             Destroy(gameObject);
         }
+
+
     }
 
     public void SaveData(PlayerData playerData)
@@ -43,6 +53,8 @@ public class GameDataManager : MonoBehaviour
         string json = JsonUtility.ToJson(playerData, true);
         System.IO.File.WriteAllText(filePath, json);
         Debug.Log("게임 데이터 저장됨: " + json);
+
+        
     }
 
     public PlayerData LoadData()
