@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
 {
     float Coin;
 
+    public bool canMove = true; //대화
+
     public float moveSpeed = 5f;
 
     public Sprite[] spriteUp;
@@ -41,7 +43,7 @@ public class PlayerController : MonoBehaviour
         if (input.sqrMagnitude <= 0.01f)
         {
             frameIndex = 0;
-            sr.sprite = currentSprites[frameIndex];
+                
             return;
         }
 
@@ -61,6 +63,9 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!canMove)//대화
+            return;
+
         rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
     }
 
@@ -77,6 +82,12 @@ public class PlayerController : MonoBehaviour
 
     public void OnMove(InputValue Value)
     {
+        if (!canMove)
+        {
+            velocity = Vector2.zero;
+            return;
+        }//대화
+
         input = Value.Get<Vector2>();
         velocity = input.normalized * moveSpeed;
 
@@ -102,7 +113,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.CompareTag("Coin"))
         {
-           itemOB Coin = collision.GetComponent<itemOB>();
+            itemOB Coin = collision.GetComponent<itemOB>();
 
             GameDataManager.Instance.playerData.collectedItems.Add(Coin.GetItemName());
 
@@ -114,9 +125,15 @@ public class PlayerController : MonoBehaviour
 
         if (collision.CompareTag("Respawn"))
         {
-            
+
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             return;
+        }
+
+        if (collision.CompareTag("Finish"))
+        {
+            // StageResultSaver.SaveStage(SceneManager.GetActiveScene().buildIndex, (int)score);
+            //return;
         }
     }
 }
