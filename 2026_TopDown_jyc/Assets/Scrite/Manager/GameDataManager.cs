@@ -13,17 +13,18 @@ using static UnityEditor.Progress;
 
 
 [Serializable]
-
 public class PlayerData
 {
-
     public List<string> collectedItems = new List<string>();
 
+    public int coin = 0;
     public int stage = 1;
 
     public float volume = 1f;
     public bool BGM = true;
-    
+
+    // ★ 추가: 현재 플레이어의 직업 이름을 저장할 변수
+    public string currentJob = "Citizen";
 }
 
 public class GameDataManager : MonoBehaviour

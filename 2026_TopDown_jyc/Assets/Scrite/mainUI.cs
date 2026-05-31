@@ -17,7 +17,7 @@ public class TitleManager : MonoBehaviour
     {
         
  
-        SceneManager.LoadScene("Stage_1");
+        SceneManager.LoadScene("Stage_0");
         
     }
     private void Awake()
