@@ -12,6 +12,8 @@ public class TitleManager : MonoBehaviour
 
     public Slider bgmSlider;
 
+    public Slider TextSlider;
+
 
     public void GameStart()
     {
@@ -24,6 +26,7 @@ public class TitleManager : MonoBehaviour
     {
         bgmToggle.onValueChanged.AddListener(OnBGMToggleChange);
         bgmSlider.onValueChanged.AddListener(OnBGMSliderChange);
+        TextSlider.onValueChanged.AddListener(OnTextSliderChange);
 
     }
     public void OpenPanel()
@@ -55,5 +58,8 @@ public class TitleManager : MonoBehaviour
     {
         Soundmanager.Instance.ChangeBGMVolume(volume);
     }
-    
+    private void OnTextSliderChange(float volume)
+    {
+        Soundmanager.Instance.ChangeTextVolume(volume);
+    }
 }

@@ -6,21 +6,23 @@ public class EnemyTraceController : MonoBehaviour
     public float raycastDistance = 2f;
     public float traceDistance = 5f;
 
+    [Header("공격 세팅")]
+    [SerializeField] private float attackDamage = 10f;
+    [SerializeField] private float attackCooldown = 1.5f;
+    private float lastAttackTime = 0f;
+
+    private Animator animator;
     private Transform player;
-    private bool isFacingRight = false;
 
     private void Start()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        animator = GetComponent<Animator>();
 
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
             player = playerObj.transform;
             Debug.Log("플레이어 인식 성공 " + playerObj.name);
-        }
-        else
-        {
-            Debug.LogError("플레이어를 못 찾았습니다 태그를 확인하세요.");
         }
     }
 
@@ -28,56 +30,85 @@ public class EnemyTraceController : MonoBehaviour
     {
         if (player == null) return;
 
+        // -------------------------------------------------------------
+        // ★ 추가: 공격 애니메이션 재생 중이면 즉시 리턴하여 이동/연산 멈춤!
+        // (애니메이터 창의 공격 노드 이름인 "Enemy_Attack"과 대소문자가 정확히 같아야 합니다)
+        // -------------------------------------------------------------
+        if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsName("Enemy_Attack"))
+        {
+            return;
+        }
+
         // 1. 플레이어와의 방향 및 거리 계산
         Vector2 direction = player.position - transform.position;
         float distance = direction.magnitude;
 
-        // 추격 거리 밖이면 아무것도 안 함
-        if (distance > traceDistance) return;
+        if (distance > traceDistance)
+        {
+            // 추격 범위 밖으로 나가면 속도를 0으로 만들어 멈춤 애니메이션 재생
+            if (animator != null) animator.SetFloat("MoveSpeed", 0f);
+            return;
+        }
 
         Vector2 dirNormalized = direction.normalized;
 
-        // 2. 장애물 감지
-        // Obstacle 태그가 달린 물체를 감지
+        // 2. 장애물 감지 및 우회 로직
         RaycastHit2D hit = Physics2D.Raycast(transform.position, dirNormalized, raycastDistance);
         Debug.DrawRay(transform.position, dirNormalized * raycastDistance, Color.red);
 
         Vector2 finalDirection;
-
-        // 장애물 충돌 여부 확인
         if (hit.collider != null && hit.collider.CompareTag("Obstacle"))
         {
-            // 장애물이 있으면 오른쪽으로 90도 꺾어서 우회
             finalDirection = Quaternion.Euler(0, 0, -90f) * dirNormalized;
         }
         else
         {
-            // 장애물이 없으면 플레이어에게 직진
             finalDirection = dirNormalized;
         }
 
-        // 3. 바라보는 방향 전환 (Flip) 호출
-        Flip(finalDirection.x);
-
-        // 4. 이동 처리 (Space.World를 넣어야 계산된 월드 좌표대로 정확히 움직임)
+        // 3. 이동 처리
         transform.Translate(finalDirection * moveSpeed * Time.deltaTime, Space.World);
+
+        // 4. 애니메이터 파라미터 제어 (상하좌우 완벽 대응)
+        if (animator != null)
+        {
+            if (finalDirection.sqrMagnitude > 0.01f)
+            {
+                // 움직일 때는 실시간 방향X, 방향Y 값을 찔러줍니다.
+                animator.SetFloat("DirX", finalDirection.x);
+                animator.SetFloat("DirY", finalDirection.y);
+                animator.SetFloat("MoveSpeed", finalDirection.magnitude);
+            }
+            else
+            {
+                // 완전히 멈췄을 때는 MoveSpeed만 0으로 만들어 줍니다. (마지막 바라보던 방향 유지)
+                animator.SetFloat("MoveSpeed", 0f);
+            }
+        }
     }
 
-    // 캐릭터의 좌우 이미지를 반전시키는 함수
-    private void Flip(float horizontalDir)
+    private void OnCollisionStay2D(Collision2D collision)
     {
-        // 미세하게 움직일 때는 반전하지 않음 (떨림 방지)
-        if (Mathf.Abs(horizontalDir) < 0.01f) return;
-
-        // 진행 방향과 현재 바라보는 방향이 다를 때만 반전
-        if ((horizontalDir > 0 && !isFacingRight) || (horizontalDir < 0 && isFacingRight))
+        if (collision.gameObject.CompareTag("Player"))
         {
-            isFacingRight = !isFacingRight;
+            if (Time.time >= lastAttackTime + attackCooldown)
+            {
+                Health playerHealth = collision.gameObject.GetComponent<Health>();
 
-            // LocalScale의 X값을 반전시켜 자식 오브젝트까지 한꺼번에 뒤집음
-            Vector3 localScale = transform.localScale;
-            localScale.x *= -1;
-            transform.localScale = localScale;
+                if (playerHealth != null)
+                {
+                    // 1. 플레이어에게 대미지 주기
+                    playerHealth.TakeDamage(attackDamage);
+                    lastAttackTime = Time.time;
+                    Debug.Log($"[몬스터 공격] 플레이어에게 {attackDamage} 데미지를 입혔습니다!");
+
+                    // ★ 2. 여기에 대망의 공격 애니메이션 발동 코드 추가!
+                    if (animator != null)
+                    {
+                        animator.SetTrigger("Attack");
+                    }
+                }
+            }
         }
     }
 }

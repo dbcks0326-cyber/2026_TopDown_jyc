@@ -11,9 +11,11 @@ public class Soundmanager : MonoBehaviour
 
     public AudioClip click;
 
+    public AudioClip Text;
 
     AudioSource audioSourceBGM;
     AudioSource audioSource;
+    AudioSource audioSourceText;
 
     private void Start()
     {
@@ -26,6 +28,9 @@ public class Soundmanager : MonoBehaviour
             audioSourceBGM.volume = 0;
         }
 
+        audioSource.volume = data.volume;
+        audioSourceText.volume = data.volume;
+
         PlayBGM();
     }
     void Awake()
@@ -35,7 +40,7 @@ public class Soundmanager : MonoBehaviour
         
         audioSourceBGM = gameObject.AddComponent<AudioSource>();
         audioSource = gameObject.AddComponent<AudioSource>();
-        
+        audioSourceText = gameObject.AddComponent<AudioSource>();
        
     }
 
@@ -76,10 +81,23 @@ public class Soundmanager : MonoBehaviour
         );
     }
 
-  
+
     public void ChangeBGMVolume(float volume)
     {
         audioSourceBGM.volume = volume;
+
+        GameDataManager.Instance.playerData.volume = volume;
+
+        GameDataManager.Instance.SaveData(
+        GameDataManager.Instance.playerData
+        );
+    }
+
+   
+    public void ChangeTextVolume(float volume)
+    {
+        audioSource.volume = volume;
+        audioSourceText.volume = volume;
 
         GameDataManager.Instance.playerData.volume = volume;
 
@@ -93,4 +111,9 @@ public class Soundmanager : MonoBehaviour
         audioSource.PlayOneShot(click);
     }
 
+
+    public void TextSound()
+    {
+        audioSource.PlayOneShot(Text);
+    }
 }

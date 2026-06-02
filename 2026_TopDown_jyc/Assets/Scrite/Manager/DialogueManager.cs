@@ -153,7 +153,15 @@ public class DialogueManager : MonoBehaviour
         foreach (char c in line)
         {
             currentBubbleText.text += c;
+
+            // ★ 개선: 현재 글자가 '공백(띄어쓰기)'이 아닐 때만 소리를 냅니다.
+            if (c != ' ' && Soundmanager.Instance != null)
+            {
+                Soundmanager.Instance.TextSound();
+            }
+
             yield return new WaitForSeconds(typingSpeed);
+            
         }
 
         isTyping = false;

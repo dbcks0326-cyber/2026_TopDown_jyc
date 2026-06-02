@@ -46,3 +46,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Soundmanager
   clipBGM: {fileID: 8300000, guid: 16f2185a75476c946977fc82b1d72fbe, type: 3}
   click: {fileID: 8300000, guid: b4cf439df703bb743b0fb1ab8f025d52, type: 3}
+  Text: {fileID: 8300000, guid: ddcc9d7a14376de4993da391f4a0f80c, type: 3}
