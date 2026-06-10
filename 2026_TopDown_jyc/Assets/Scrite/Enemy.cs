@@ -14,9 +14,17 @@ public class EnemyTraceController : MonoBehaviour
     private Animator animator;
     private Transform player;
 
+    // -------------------------------------------------------------
+    // ★ 추가: 넉백 상태를 확인하기 위해 EnemyHealth 컴포넌트를 가져옵니다.
+    // -------------------------------------------------------------
+    private EnemyHealth enemyHealth;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
+
+        // 내 몸에 붙어있는 EnemyHealth 컴포넌트를 미리 찾아둡니다.
+        enemyHealth = GetComponent<EnemyHealth>();
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
@@ -31,11 +39,27 @@ public class EnemyTraceController : MonoBehaviour
         if (player == null) return;
 
         // -------------------------------------------------------------
-        // ★ 추가: 공격 애니메이션 재생 중이면 즉시 리턴하여 이동/연산 멈춤!
-        // (애니메이터 창의 공격 노드 이름인 "Enemy_Attack"과 대소문자가 정확히 같아야 합니다)
+        // ★ 추가/수정: 공격 애니메이션 재생 중이거나 '넉백 중'이면 
+        // AI 추격 이동 연산을 즉시 멈추고 리턴시킵니다!
         // -------------------------------------------------------------
         if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsName("Enemy_Attack"))
         {
+            return;
+        }
+
+        // EnemyHealth가 존재하고, 현재 넉백 코루틴이 돌고 있다면 아래 이동 코드를 실행하지 않습니다.
+        // (팁: C#에서 프로퍼티나 함수를 따로 안 만들었어도, 넉백 중일 때는 그냥 리턴하게 연동합니다)
+        if (enemyHealth != null && enemyHealth.enabled == false)
+        {
+            return;
+        }
+
+        // ※ 만약 EnemyHealth 스크립트가 넉백 때 스스로를 끄지 않는다면, 
+        // 가장 확실하게 넉백 중인지 판별하기 위해 Rigidbody의 속도가 크게 잡혀있을 때(넉백 힘이 들어왔을 때) 차단합니다.
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null && rb.linearVelocity.sqrMagnitude > 0.1f)
+        {
+            // 넉백으로 날아가고 있을 때는 강제로 애니메이션 속도를 줄이거나 유지하고 추격 이동을 차단합니다.
             return;
         }
 

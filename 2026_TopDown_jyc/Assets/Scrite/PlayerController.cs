@@ -1,12 +1,14 @@
-using System.Collections; // ★ 코루틴(IEnumerator)을 쓰기 위해 반드시 필요합니다!
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem; // ★ 키보드 입력 체크(Keyboard.current)를 위해 필수입니다!
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.Rendering.Universal; // ★ 중요: Light2D 컴포넌트를 쓰기 위해 반드시 필요합니다!
 
 public class PlayerController : MonoBehaviour
 {
-    public bool canMove = true; // 대화 상태 체크
+    public bool canMove = true;
 
     public float moveSpeed = 5f;
 
@@ -32,19 +34,36 @@ public class PlayerController : MonoBehaviour
     [Header("모든 직업 데이터 리스트")]
     public List<JobData> allJobs;
 
-    // -------------------------------------------------------------
-    // ★ 기존 추가: 피격 연출용 변수
-    // -------------------------------------------------------------
-    private bool isHurt = false; // 현재 빨간색 깜빡임 연출이 돌고 있는지 체크
+    // 피격 연출용 변수
+    private bool isHurt = false;
 
     // -------------------------------------------------------------
-    // ★ 기존 추가: 공격 시스템용 변수
+    // ★ Q, E, R 독립 스킬 설정 (오브젝트, 대미지, 라이트 데이터 연동)
     // -------------------------------------------------------------
-    [Header("공격 설정")]
-    public GameObject attackRangeObject; // 플레이어 자식으로 만든 AttackRange 오브젝트 등록 칸
-    public float attackCooldown = 0.3f;  // 공격 연사 속도 (쿨타임)
-    private float lastAttackTime = 0f;    // 마지막으로 공격한 시간 저장용
-    private bool isAttacking = false;    // 현재 공격 애니메이션/루틴이 돌고 있는지 체크
+    [Header("Q 스킬 설정")]
+    [SerializeField] private GameObject qAttackPrefab;
+    [SerializeField] private float qDamage = 15f;
+    [SerializeField] private float qCooldown = 3f;
+    private float nextQAttackTime = 0f;
+
+    [Header("E 스킬 설정 (기본공격)")]
+    [SerializeField] private GameObject eAttackPrefab;
+    [SerializeField] private float eDamage = 10f;
+    [SerializeField] private float eCooldown = 0.3f;
+    private float nextEAttackTime = 0f;
+
+    [Header("R 스킬 설정 (궁극기)")]
+    [SerializeField] private GameObject rAttackPrefab;
+    [SerializeField] private float rDamage = 40f;
+    [SerializeField] private float rCooldown = 10f;
+    private float nextRAttackTime = 0f;
+
+    private bool isAttacking = false;
+
+    [Header("쿨타임 UI 이미지 연결")]
+    [SerializeField] private Image qCooldownImage;
+    [SerializeField] private Image eCooldownImage;
+    [SerializeField] private Image rCooldownImage;
 
     private void Awake()
     {
@@ -57,51 +76,84 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // 1. 게임 시작 시 JSON에서 로드된 직업 이름을 가져옴
         string savedJobName = GameDataManager.Instance.playerData.currentJob;
-
-        // 등록된 직업 리스트 중에서 일치하는 직업 데이터를 찾음
         JobData savedJob = allJobs.Find(job => job.jobName == savedJobName);
-
-        // 찾았다면 해당 직업으로 세팅
         if (savedJob != null)
         {
             ChangeJob(savedJob);
         }
 
-        // -------------------------------------------------------------
-        // ★ 기존 코드: 특정 스테이지 이동 시 풀피가 된 세이브 데이터를 내 몸(Health)에 동기화
-        // -------------------------------------------------------------
         Health playerHealth = GetComponent<Health>();
         if (playerHealth != null)
         {
             playerHealth.Invoke("Start", 0.01f);
-            Debug.Log("[PlayerController] 씬 전환에 따른 플레이어 체력 스탯 동기화 완료.");
         }
 
- 
+        if (qCooldownImage != null) qCooldownImage.fillAmount = 0;
+        if (eCooldownImage != null) eCooldownImage.fillAmount = 0;
+        if (rCooldownImage != null) rCooldownImage.fillAmount = 0;
+
+        // 시작할 때 모든 스킬 오브젝트는 꺼둡니다.
+        if (qAttackPrefab != null) qAttackPrefab.SetActive(false);
+        if (eAttackPrefab != null) eAttackPrefab.SetActive(false);
+        if (rAttackPrefab != null) rAttackPrefab.SetActive(false);
     }
 
     private void Update()
     {
-        // -------------------------------------------------------------
-        // ★ 코드 내 직접 키 지정: 매 프레임마다 키보드 E 키가 눌렸는지 감지합니다.
-        // -------------------------------------------------------------
-        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+        if (Keyboard.current != null)
         {
-            // 이동 가능한 상태이고, 현재 이미 공격 중이 아니라면 공격 조건 확인
             if (canMove && !isAttacking)
             {
-                // 공격 쿨타임이 지났는지 검사
-                if (Time.time >= lastAttackTime + attackCooldown)
+                float moveX = 0f;
+                float moveY = 0f;
+
+                if (Keyboard.current.aKey.isPressed) moveX = -1f;
+                if (Keyboard.current.dKey.isPressed) moveX = 1f;
+                if (Keyboard.current.sKey.isPressed) moveY = -1f;
+                if (Keyboard.current.wKey.isPressed) moveY = 1f;
+
+                input = new Vector2(moveX, moveY);
+                velocity = input.normalized * moveSpeed;
+
+                HandleDirectionRotation();
+            }
+
+            // Q 키 입력 체크
+            if (Keyboard.current.qKey.wasPressedThisFrame && canMove && !isAttacking)
+            {
+                if (Time.time >= nextQAttackTime)
                 {
-                    lastAttackTime = Time.time;
-                    StartCoroutine(AttackRoutine());
+                    nextQAttackTime = Time.time + qCooldown;
+                    StartCoroutine(AttackRoutine(qAttackPrefab, qDamage));
+                }
+            }
+
+            // E 키 입력 체크
+            if (Keyboard.current.eKey.wasPressedThisFrame && canMove && !isAttacking)
+            {
+                if (Time.time >= nextEAttackTime)
+                {
+                    nextEAttackTime = Time.time + eCooldown;
+                    StartCoroutine(AttackRoutine(eAttackPrefab, eDamage));
+                }
+            }
+
+            // R 키 입력 체크
+            if (Keyboard.current.rKey.wasPressedThisFrame && canMove && !isAttacking)
+            {
+                if (Time.time >= nextRAttackTime)
+                {
+                    nextRAttackTime = Time.time + rCooldown;
+                    StartCoroutine(AttackRoutine(rAttackPrefab, rDamage));
                 }
             }
         }
 
-        // 공격 중일 때는 걷는 스프라이트 애니메이션이 도는 것을 잠시 멈춥니다.
+        UpdateCooldownUI(nextQAttackTime, qCooldown, qCooldownImage);
+        UpdateCooldownUI(nextEAttackTime, eCooldown, eCooldownImage);
+        UpdateCooldownUI(nextRAttackTime, rCooldown, rCooldownImage);
+
         if (isAttacking) return;
 
         if (input.sqrMagnitude <= 0.01f)
@@ -111,84 +163,40 @@ public class PlayerController : MonoBehaviour
         }
 
         timer += Time.deltaTime;
-
         if (timer >= frameTim)
         {
             timer = 0f;
             frameIndex++;
-
-            if (frameIndex >= currentSprites.Length)
-                frameIndex = 0;
-
+            if (frameIndex >= currentSprites.Length) frameIndex = 0;
             sr.sprite = currentSprites[frameIndex];
         }
     }
 
     private void FixedUpdate()
     {
-        // 대화 중이거나, 공격 동작을 수행 중일 때는 움직이지 못하게 잠금 처리
         if (!canMove || isAttacking)
         {
-            rb.linearVelocity = Vector2.zero; // 물리 속도 초기화로 미끄러짐 방지
+            rb.linearVelocity = Vector2.zero;
             return;
         }
-
         rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
     }
 
-    private void ChangeSprites(Sprite[] newSprites)
+    private void HandleDirectionRotation()
     {
-        if (currentSprites == newSprites)
-            return;
-
-        currentSprites = newSprites;
-        frameIndex = 0;
-        timer = 0f;
-        sr.sprite = currentSprites[frameIndex];
-    }
-
-    public void OnMove(InputValue Value)
-    {
-        // ★ 버그 해결: 키를 누르거나 '떼는' 입력값은 상태와 상관없이 무조건 실시간으로 최신화합니다.
-        // 이렇게 해야 공격 중에 키에서 손을 떼도 input이 (0, 0)이 되어 미끄러지지 않습니다.
-        input = Value.Get<Vector2>();
-
-        // 대화 중이거나 공격 중일 때는 실제 물리 속도(velocity)로 연결되는 것을 차단합니다.
-        if (!canMove || isAttacking)
-        {
-            velocity = Vector2.zero;
-            return;
-        }
-
-        // 정상 상태일 때만 실제 이동 속도를 계산합니다.
-        velocity = input.normalized * moveSpeed;
-
         if (input.sqrMagnitude > 0.01f)
         {
-            // -------------------------------------------------------------
-            // ★ 플레이어님이 직접 커스텀하신 위치 및 각도 값 그대로 유지
-            // -------------------------------------------------------------
             if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
             {
                 if (input.x > 0)
                 {
                     ChangeSprites(spriteRight);
-                    // [오른쪽]
-                    if (attackRangeObject != null)
-                    {
-                        attackRangeObject.transform.localPosition = new Vector2(0.1f, 0f);
-                        attackRangeObject.transform.localEulerAngles = new Vector3(0f, 0f, 90f);
-                    }
+                    SetAllAttackTransforms(new Vector2(0.14f, -0.01f), new Vector3(0f, 0f, 90f));
                 }
                 else
                 {
                     ChangeSprites(spriteLeft);
-                    // [왼쪽]
-                    if (attackRangeObject != null)
-                    {
-                        attackRangeObject.transform.localPosition = new Vector2(-0.1f, 0f);
-                        attackRangeObject.transform.localEulerAngles = new Vector3(0f, 0f, 270f);
-                    }
+                    SetAllAttackTransforms(new Vector2(-0.14f, -0.01f), new Vector3(0f, 0f, 270f));
                 }
             }
             else
@@ -196,123 +204,140 @@ public class PlayerController : MonoBehaviour
                 if (input.y > 0)
                 {
                     ChangeSprites(spriteUp);
-                    // [위쪽]
-                    if (attackRangeObject != null)
-                    {
-                        attackRangeObject.transform.localPosition = new Vector2(0f, 0.1f);
-                        attackRangeObject.transform.localEulerAngles = new Vector3(0f, 0f, 180f);
-                    }
+                    SetAllAttackTransforms(new Vector2(0f, 0.14f), new Vector3(0f, 0f, 180f));
                 }
                 else
                 {
                     ChangeSprites(spriteDown);
-                    // [아래쪽]
-                    if (attackRangeObject != null)
-                    {
-                        attackRangeObject.transform.localPosition = new Vector2(0f, -0.1f);
-                        attackRangeObject.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                    }
+                    SetAllAttackTransforms(new Vector2(0f, -0.14f), new Vector3(0f, 0f, 0f));
                 }
             }
-            // -------------------------------------------------------------
         }
     }
 
-    // -------------------------------------------------------------
-    // ★ 신규 추가: 공격 범위를 순간적으로 켰다 끄는 코루틴 함수
-    // -------------------------------------------------------------
-    private IEnumerator AttackRoutine()
+    private void SetAllAttackTransforms(Vector2 pos, Vector3 rot)
     {
-        isAttacking = true;
+        SetSingleTransform(qAttackPrefab, pos, rot);
+        SetSingleTransform(eAttackPrefab, pos, rot);
+        SetSingleTransform(rAttackPrefab, pos, rot);
+    }
 
-        // 공격 순간에는 기존 물리 속도를 zero로 만들어 즉시 정지 (미끄러짐 방지)
-        rb.linearVelocity = Vector2.zero;
-
-        if (attackRangeObject != null)
+    private void SetSingleTransform(GameObject obj, Vector2 pos, Vector3 rot)
+    {
+        if (obj != null)
         {
-            // 1. 공격용 콜라이더 오브젝트 활성화 (부딪힌 적에게 데미지)
-            attackRangeObject.SetActive(true);
-        }
-
-        // 2. 무기를 휘두르는 판정 시간 (0.15초 동안 유지)
-        yield return new WaitForSeconds(0.15f);
-
-        if (attackRangeObject != null)
-        {
-            // 3. 판정이 끝났으므로 다시 오브젝트 비활성화
-            attackRangeObject.SetActive(false);
-        }
-
-        isAttacking = false;
-
-        // -------------------------------------------------------------
-        // ★ 추가: 공격이 끝난 직후, 만약 플레이어가 ASDW 키를 여전히 누르고 있다면
-        // 그 입력값(input)을 바탕으로 속도(velocity)를 즉시 부활시켜 줍니다!
-        // -------------------------------------------------------------
-        if (input.sqrMagnitude > 0.01f)
-        {
-            velocity = input.normalized * moveSpeed;
+            obj.transform.localPosition = pos;
+            obj.transform.localEulerAngles = rot;
         }
     }
 
+    private void ChangeSprites(Sprite[] newSprites)
+    {
+        if (currentSprites == newSprites) return;
+        currentSprites = newSprites;
+        frameIndex = 0;
+        timer = 0f;
+        sr.sprite = currentSprites[frameIndex];
+    }
+
+    public void OnMove(InputValue Value) { }
+
     // -------------------------------------------------------------
-    // ★ 기존 추가: 외부(Health.cs)에서 호출할 피격 시작 함수
+    // ★ [수정] 스킬 애니메이션 시간에 비례해 불빛 밝기(intensity)를 0 -> 2 -> 0 제어
     // -------------------------------------------------------------
+    private IEnumerator AttackRoutine(GameObject attackPrefab, float skillDamage)
+    {
+        if (attackPrefab == null) yield break;
+
+        isAttacking = true;
+        rb.linearVelocity = Vector2.zero;
+        velocity = Vector2.zero;
+
+        // 1. 스킬 오브젝트 켜기
+        attackPrefab.SetActive(true);
+
+        // [참고] 공격 대미지 연동 부분
+        PlayerAttack attackScript = attackPrefab.GetComponent<PlayerAttack>();
+        if (attackScript != null)
+        {
+            // attackScript.damage = skillDamage; 
+        }
+
+        // 2. 애니메이션 실제 시간 계산
+        Animator effectAnim = attackPrefab.GetComponent<Animator>();
+        float attackDuration = 0.15f; // 기본 예외처리 대기 시간
+
+        if (effectAnim != null)
+        {
+            attackDuration = effectAnim.GetCurrentAnimatorStateInfo(0).length;
+        }
+
+        // 3. 해당 스킬 오브젝트 혹은 그 자식에게 붙어있는 Light2D 컴포넌트 탐색
+        Light2D skillLight = attackPrefab.GetComponentInChildren<Light2D>();
+
+        float elapsedTime = 0f;
+
+        // 애니메이션 시간이 흐르는 동안 실시간 루프 연산 실행
+        while (elapsedTime < attackDuration)
+        {
+            elapsedTime += Time.deltaTime;
+
+            // 현재 진행률을 0과 1 사이 비율(t)로 계산
+            float t = elapsedTime / attackDuration;
+
+            if (skillLight != null)
+            {
+                // 수학 함수인 Mathf.Sin을 이용하여 불빛이 0에서 스르륵 2까지 커졌다가 다시 0으로 부드럽게 줄어들게 만듭니다.
+                // Sin(0) = 0, Sin(π/2) = 1, Sin(π) = 0 임을 이용한 정석 공식입니다.
+                skillLight.intensity = Mathf.Sin(t * Mathf.PI) * 2f;
+            }
+
+            yield return null; // 다음 프레임까지 대기
+        }
+
+        // 4. 안전장치: 시간이 다 끝나면 확실하게 불빛을 끄고 오브젝트 비활성화
+        if (skillLight != null)
+        {
+            skillLight.intensity = 0f;
+        }
+
+        attackPrefab.SetActive(false);
+        isAttacking = false;
+    }
+
     public void OnHurt()
     {
         if (isHurt) return;
         StartCoroutine(HurtRoutine());
     }
 
-    // -------------------------------------------------------------
-    // ★ 기존 추가: 실시간으로 색상을 바꿨다 되돌리는 코루틴 함수
-    // -------------------------------------------------------------
     private IEnumerator HurtRoutine()
     {
         isHurt = true;
-
-        if (sr != null)
-        {
-            // 플레이어도 부드러운 연빨강으로 변경! (0.15초 유지로 타이밍도 통일)
-            sr.color = new Color(1f, 0.4f, 0.4f, 1f);
-        }
-
+        if (sr != null) sr.color = new Color(1f, 0.4f, 0.4f, 1f);
         yield return new WaitForSeconds(0.15f);
-
-        if (sr != null)
-        {
-            sr.color = Color.white;
-        }
-
+        if (sr != null) sr.color = Color.white;
         isHurt = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // 1. 코인(아이템) 충돌 처리
         if (collision.CompareTag("Coin"))
         {
+            
             itemOB coinItem = collision.GetComponent<itemOB>();
-
             if (coinItem != null)
             {
                 GameDataManager.Instance.playerData.collectedItems.Add(coinItem.GetItemName());
                 GameDataManager.Instance.playerData.coin += coinItem.GetCoin();
-
-                Debug.Log($"[플레이어 주체 획득] {coinItem.GetItemName()} 획득! (+{coinItem.GetCoin()}코인) / 총 코인: {GameDataManager.Instance.playerData.coin}개");
-
                 Destroy(collision.gameObject);
             }
         }
-
-        // 2. 낙사 구역 및 리스폰 처리
         if (collision.CompareTag("Respawn"))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             return;
         }
-
-        // 3. 스테이지 클리어 및 다음 레벨 이동 처리
         if (collision.CompareTag("Finish"))
         {
             GameDataManager.Instance.SaveData(GameDataManager.Instance.playerData);
@@ -323,19 +348,17 @@ public class PlayerController : MonoBehaviour
     public void ChangeJob(JobData newJob)
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null && newJob.jobSprite != null)
-        {
-            spriteRenderer.sprite = newJob.jobSprite;
-        }
-
+        if (spriteRenderer != null && newJob.jobSprite != null) spriteRenderer.sprite = newJob.jobSprite;
         Animator animator = GetComponent<Animator>();
-        if (animator != null && newJob.jobAnimatorOverride != null)
-        {
-            animator.runtimeAnimatorController = newJob.jobAnimatorOverride;
-        }
-
+        if (animator != null && newJob.jobAnimatorOverride != null) animator.runtimeAnimatorController = newJob.jobAnimatorOverride;
         this.moveSpeed = newJob.moveSpeed;
+    }
 
-        Debug.Log($"{newJob.jobName} 애니메이션 및 스탯 적용 완료!");
+    private void UpdateCooldownUI(float nextUseTime, float cooldownDuration, Image cooldownImage)
+    {
+        if (cooldownImage == null) return;
+        float timeLeft = nextUseTime - Time.time;
+        if (timeLeft > 0) cooldownImage.fillAmount = timeLeft / cooldownDuration;
+        else cooldownImage.fillAmount = 0f;
     }
 }
