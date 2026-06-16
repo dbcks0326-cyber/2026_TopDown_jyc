@@ -133,10 +133,10 @@ MonoBehaviour:
   - {fileID: 6388578008449241829, guid: b53b1b34241f3a745873881f669379ea, type: 3}
   frameTim: 0.2
   allJobs: []
-  qAttackPrefab: {fileID: 0}
-  qDamage: 15
+  dashSpeed: 2
+  dashDuration: 0.2
   qCooldown: 3
-  eAttackPrefab: {fileID: 0}
+  eAttackPrefab: {fileID: 3448932836465584840}
   eDamage: 10
   eCooldown: 0.3
   rAttackPrefab: {fileID: 0}

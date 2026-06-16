@@ -4,12 +4,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.Rendering.Universal; // ★ 중요: Light2D 컴포넌트를 쓰기 위해 반드시 필요합니다!
+using UnityEngine.Rendering.Universal;
 
 public class PlayerController : MonoBehaviour
 {
     public bool canMove = true;
-
     public float moveSpeed = 5f;
 
     [Header("기본 방향별 스프라이트 배열")]
@@ -25,26 +24,26 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 input;
     private Vector2 velocity;
+    private Vector2 lastMoveDirection = Vector2.down; // ★ 마지막에 바라본 방향 백업용 (대쉬 방향 기준점)
 
     private Sprite[] currentSprites;
-
     private int frameIndex = 0;
     private float timer = 0f;
 
     [Header("모든 직업 데이터 리스트")]
     public List<JobData> allJobs;
 
-    // 피격 연출용 변수
     private bool isHurt = false;
 
     // -------------------------------------------------------------
-    // ★ Q, E, R 독립 스킬 설정 (오브젝트, 대미지, 라이트 데이터 연동)
+    // ★ Q 대쉬 스킬 신규 설정 변경
     // -------------------------------------------------------------
-    [Header("Q 스킬 설정")]
-    [SerializeField] private GameObject qAttackPrefab;
-    [SerializeField] private float qDamage = 15f;
-    [SerializeField] private float qCooldown = 3f;
+    [Header("Q 스킬 설정 (대쉬)")]
+    [SerializeField] private float dashSpeed = 15f;        // 대쉬 속도
+    [SerializeField] private float dashDuration = 0.2f;     // 대쉬 지속 시간 (몇 초 동안 돌진할지)
+    [SerializeField] private float qCooldown = 3f;          // 대쉬 쿨타임
     private float nextQAttackTime = 0f;
+    private bool isDashing = false;                         // 현재 대쉬 중인지 체크
 
     [Header("E 스킬 설정 (기본공격)")]
     [SerializeField] private GameObject eAttackPrefab;
@@ -93,8 +92,6 @@ public class PlayerController : MonoBehaviour
         if (eCooldownImage != null) eCooldownImage.fillAmount = 0;
         if (rCooldownImage != null) rCooldownImage.fillAmount = 0;
 
-        // 시작할 때 모든 스킬 오브젝트는 꺼둡니다.
-        if (qAttackPrefab != null) qAttackPrefab.SetActive(false);
         if (eAttackPrefab != null) eAttackPrefab.SetActive(false);
         if (rAttackPrefab != null) rAttackPrefab.SetActive(false);
     }
@@ -103,7 +100,8 @@ public class PlayerController : MonoBehaviour
     {
         if (Keyboard.current != null)
         {
-            if (canMove && !isAttacking)
+            // ★ 대쉬 중이 아닐 때만 일반 이동 입력 가동
+            if (canMove && !isAttacking && !isDashing)
             {
                 float moveX = 0f;
                 float moveY = 0f;
@@ -116,21 +114,27 @@ public class PlayerController : MonoBehaviour
                 input = new Vector2(moveX, moveY);
                 velocity = input.normalized * moveSpeed;
 
+                // 마지막으로 바라본 유효한 방향을 항상 기억 (가만히 서서 Q 눌러도 대쉬해 나가게 함)
+                if (input.sqrMagnitude > 0.01f)
+                {
+                    lastMoveDirection = input.normalized;
+                }
+
                 HandleDirectionRotation();
             }
 
-            // Q 키 입력 체크
-            if (Keyboard.current.qKey.wasPressedThisFrame && canMove && !isAttacking)
+            // ★ [변경]: Q 키 입력 시 대쉬 루틴(DashRoutine)을 호출합니다!
+            if (Keyboard.current.qKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
             {
                 if (Time.time >= nextQAttackTime)
                 {
                     nextQAttackTime = Time.time + qCooldown;
-                    StartCoroutine(AttackRoutine(qAttackPrefab, qDamage));
+                    StartCoroutine(DashRoutine());
                 }
             }
 
             // E 키 입력 체크
-            if (Keyboard.current.eKey.wasPressedThisFrame && canMove && !isAttacking)
+            if (Keyboard.current.eKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
             {
                 if (Time.time >= nextEAttackTime)
                 {
@@ -140,7 +144,7 @@ public class PlayerController : MonoBehaviour
             }
 
             // R 키 입력 체크
-            if (Keyboard.current.rKey.wasPressedThisFrame && canMove && !isAttacking)
+            if (Keyboard.current.rKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
             {
                 if (Time.time >= nextRAttackTime)
                 {
@@ -154,7 +158,7 @@ public class PlayerController : MonoBehaviour
         UpdateCooldownUI(nextEAttackTime, eCooldown, eCooldownImage);
         UpdateCooldownUI(nextRAttackTime, rCooldown, rCooldownImage);
 
-        if (isAttacking) return;
+        if (isAttacking || isDashing) return;
 
         if (input.sqrMagnitude <= 0.01f)
         {
@@ -174,12 +178,44 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // ★ 대쉬 중일 때는 고유 물리 주행을 하므로 FixedUpdate 연산을 생략합니다.
+        if (isDashing) return;
+
         if (!canMove || isAttacking)
         {
             rb.linearVelocity = Vector2.zero;
             return;
         }
         rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
+    }
+
+    // -------------------------------------------------------------
+    // ★ [신규 추가]: Q 대쉬 전용 기동 코루틴
+    // -------------------------------------------------------------
+    private IEnumerator DashRoutine()
+    {
+        isDashing = true;
+
+        // 대쉬 중에는 몬스터의 피격 판정을 가리기 위해 무적 코드로 연동 준비
+        Health playerHealth = GetComponent<Health>();
+
+        // 프로젝트에 구현된 무적 기능이 있다면 켜주기 (만약 스크립트에 구현되어 있다면 주석 해제하여 사용 가능)
+        // if(playerHealth != null) playerHealth.isInvincible = true; 
+
+        // 몬스터의 밀쳐내기나 지형 통과를 더 깔끔하게 하려면 Rigidbody 속도로 밀어주는 것이 정석입니다.
+        // 마지막으로 보던 방향(lastMoveDirection)으로 폭발적인 속도를 주입합니다.
+        rb.linearVelocity = lastMoveDirection * dashSpeed;
+
+        // 지정된 시간(dashDuration) 동안 돌진 유지
+        yield return new WaitForSeconds(dashDuration);
+
+        // 대쉬 타임이 종료되면 딱 브레이크 잡고 물리 정지
+        rb.linearVelocity = Vector2.zero;
+
+        // 무적 풀어주기
+        // if(playerHealth != null) playerHealth.isInvincible = false;
+
+        isDashing = false;
     }
 
     private void HandleDirectionRotation()
@@ -217,7 +253,6 @@ public class PlayerController : MonoBehaviour
 
     private void SetAllAttackTransforms(Vector2 pos, Vector3 rot)
     {
-        SetSingleTransform(qAttackPrefab, pos, rot);
         SetSingleTransform(eAttackPrefab, pos, rot);
         SetSingleTransform(rAttackPrefab, pos, rot);
     }
@@ -242,9 +277,6 @@ public class PlayerController : MonoBehaviour
 
     public void OnMove(InputValue Value) { }
 
-    // -------------------------------------------------------------
-    // ★ [수정] 스킬 애니메이션 시간에 비례해 불빛 밝기(intensity)를 0 -> 2 -> 0 제어
-    // -------------------------------------------------------------
     private IEnumerator AttackRoutine(GameObject attackPrefab, float skillDamage)
     {
         if (attackPrefab == null) yield break;
@@ -253,49 +285,32 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         velocity = Vector2.zero;
 
-        // 1. 스킬 오브젝트 켜기
         attackPrefab.SetActive(true);
 
-        // [참고] 공격 대미지 연동 부분
-        PlayerAttack attackScript = attackPrefab.GetComponent<PlayerAttack>();
-        if (attackScript != null)
-        {
-            // attackScript.damage = skillDamage; 
-        }
-
-        // 2. 애니메이션 실제 시간 계산
         Animator effectAnim = attackPrefab.GetComponent<Animator>();
-        float attackDuration = 0.15f; // 기본 예외처리 대기 시간
+        float attackDuration = 0.15f;
 
         if (effectAnim != null)
         {
             attackDuration = effectAnim.GetCurrentAnimatorStateInfo(0).length;
         }
 
-        // 3. 해당 스킬 오브젝트 혹은 그 자식에게 붙어있는 Light2D 컴포넌트 탐색
         Light2D skillLight = attackPrefab.GetComponentInChildren<Light2D>();
-
         float elapsedTime = 0f;
 
-        // 애니메이션 시간이 흐르는 동안 실시간 루프 연산 실행
         while (elapsedTime < attackDuration)
         {
             elapsedTime += Time.deltaTime;
-
-            // 현재 진행률을 0과 1 사이 비율(t)로 계산
             float t = elapsedTime / attackDuration;
 
             if (skillLight != null)
             {
-                // 수학 함수인 Mathf.Sin을 이용하여 불빛이 0에서 스르륵 2까지 커졌다가 다시 0으로 부드럽게 줄어들게 만듭니다.
-                // Sin(0) = 0, Sin(π/2) = 1, Sin(π) = 0 임을 이용한 정석 공식입니다.
                 skillLight.intensity = Mathf.Sin(t * Mathf.PI) * 2f;
             }
 
-            yield return null; // 다음 프레임까지 대기
+            yield return null;
         }
 
-        // 4. 안전장치: 시간이 다 끝나면 확실하게 불빛을 끄고 오브젝트 비활성화
         if (skillLight != null)
         {
             skillLight.intensity = 0f;
@@ -324,7 +339,6 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.CompareTag("Coin"))
         {
-            
             itemOB coinItem = collision.GetComponent<itemOB>();
             if (coinItem != null)
             {

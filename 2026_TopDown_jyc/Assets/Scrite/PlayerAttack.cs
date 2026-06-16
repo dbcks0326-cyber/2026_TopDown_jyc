@@ -17,7 +17,7 @@ public class PlayerAttack : MonoBehaviour
             {
                 // 몬스터에게 대미지를 쾅! 입힙니다.
                 enemyHealth.TakeDamage(attackDamage);
-                Debug.Log($"[플레이어 반격] 몬스터에게 {attackDamage}의 데미지를 입혔습니다!");
+               // Debug.Log($"[플레이어 반격] 몬스터에게 {attackDamage}의 데미지를 입혔습니다!");
             }
         }
     }

@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 559725705713487077}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.058154218, w: 0.99830765}
+  m_LocalRotation: {x: -0, y: -0, z: -0.08013166, w: 0.9967843}
   m_LocalPosition: {x: -0.0010000169, y: -0.0040000007, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -48,8 +48,8 @@ MonoBehaviour:
   m_LightType: 3
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
-  m_Color: {r: 1, g: 0.907652, b: 0.5, a: 1}
-  m_Intensity: 0.7
+  m_Color: {r: 1, g: 0.8110236, b: 0, a: 1}
+  m_Intensity: 0.5
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: 05fdad2a00000000
@@ -72,8 +72,8 @@ MonoBehaviour:
     m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0.11340153
-  m_PointLightOuterRadius: 0.23985934
+  m_PointLightInnerRadius: 0.034369394
+  m_PointLightOuterRadius: 0.13666502
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1
@@ -237,3 +237,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::itemOB
   data: {fileID: 11400000, guid: 766ee81311af2164ca6b6f9c09808477, type: 2}
+  floatSpeed: 3
+  floatAmplitude: 0.01
