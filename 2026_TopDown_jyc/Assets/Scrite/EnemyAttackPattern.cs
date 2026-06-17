@@ -33,16 +33,12 @@ public class EnemyAttackPattern : MonoBehaviour
 
         if (attackIndicator != null)
         {
-            // 회전각을 0으로 고정하여 기준을 잡습니다.
             attackIndicator.transform.localRotation = Quaternion.identity;
-
-            // 인스펙터에 이쁘게 맞춰두신 원본 스케일(X=0.25, Y=0.08)을 기억합니다.
             baseScale = attackIndicator.transform.localScale;
 
             SpriteRenderer indicatorSR = attackIndicator.GetComponent<SpriteRenderer>();
             if (indicatorSR != null)
             {
-                // 우측 바라볼 때의 순수 월드 가로 길이를 정확히 측정합니다.
                 baseLength = attackIndicator.transform.lossyScale.x * indicatorSR.sprite.bounds.size.x;
             }
             else
@@ -65,7 +61,6 @@ public class EnemyAttackPattern : MonoBehaviour
     void Update()
     {
         if (playerTransform == null) return;
-
         if (cooldownTimer > 0) cooldownTimer -= Time.deltaTime;
 
         float distance = Vector2.Distance(transform.position, playerTransform.position);
@@ -80,7 +75,6 @@ public class EnemyAttackPattern : MonoBehaviour
     {
         isAttacking = true;
 
-        // 1. 차징 시 물리 및 애니메이션 완벽 정지 (얼음)
         rb.linearVelocity = Vector2.zero;
         rb.bodyType = RigidbodyType2D.Kinematic;
 
@@ -91,7 +85,6 @@ public class EnemyAttackPattern : MonoBehaviour
             animator.speed = 0f;
         }
 
-        // 2. 방향 판단
         Vector2 lookDirection = Vector2.down;
         if (animator != null)
         {
@@ -108,52 +101,60 @@ public class EnemyAttackPattern : MonoBehaviour
             }
         }
 
-        // 3. 범위 조절 및 위치 정렬 (회전 없이 크기와 부호 교체로 처리)
+        // -------------------------------------------------------------
+        // ★ [수정]: 1초(noticeDuration) 동안 인디케이터가 차오르는 연출
+        // -------------------------------------------------------------
         if (attackIndicator != null)
         {
             attackIndicator.SetActive(true);
             attackIndicator.transform.localRotation = Quaternion.identity;
 
+            float elapsed = 0f;
             float halfLen = baseLength / 2f;
 
-            if (lookDirection == Vector2.right) // 오른쪽
+            while (elapsed < noticeDuration)
             {
-                attackIndicator.transform.localScale = new Vector3(baseScale.x, baseScale.y, 1f);
-                attackIndicator.transform.localPosition = new Vector3(halfLen, -0.06f, 0f);
-            }
-            else if (lookDirection == Vector2.left) // 왼쪽
-            {
-                attackIndicator.transform.localScale = new Vector3(baseScale.x, baseScale.y, 1f);
-                attackIndicator.transform.localPosition = new Vector3(-halfLen, -0.06f, 0f);
-            }
-            else if (lookDirection == Vector2.up) // 위
-            {
-                attackIndicator.transform.localScale = new Vector3(baseScale.y, baseScale.x, 1f);
-                attackIndicator.transform.localPosition = new Vector3(0f, halfLen - 0.06f, 0f);
-            }
-            else if (lookDirection == Vector2.down) // 아래
-            {
-                attackIndicator.transform.localScale = new Vector3(baseScale.y, baseScale.x, 1f);
-                attackIndicator.transform.localPosition = new Vector3(0f, -halfLen - 0.06f, 0f);
+                elapsed += Time.deltaTime;
+                float progress = elapsed / noticeDuration; // 0에서 1까지 증가하는 비율
+
+                // 방향별로 중심축(Pivot) 정렬 상태에 맞춰 크기와 위치를 실시간 Lerp로 조절합니다.
+                if (lookDirection == Vector2.right) // 오른쪽
+                {
+                    attackIndicator.transform.localScale = new Vector3(baseScale.x * progress, baseScale.y, 1f);
+                    // 크기가 커질 때 앞으로 뻗어나가는 느낌을 주기 위해 중심 위치도 같이 이동
+                    attackIndicator.transform.localPosition = new Vector3(halfLen * progress, -0.06f, 0f);
+                }
+                else if (lookDirection == Vector2.left) // 왼쪽
+                {
+                    attackIndicator.transform.localScale = new Vector3(baseScale.x * progress, baseScale.y, 1f);
+                    attackIndicator.transform.localPosition = new Vector3(-halfLen * progress, -0.06f, 0f);
+                }
+                else if (lookDirection == Vector2.up) // 위
+                {
+                    attackIndicator.transform.localScale = new Vector3(baseScale.y, baseScale.x * progress, 1f);
+                    attackIndicator.transform.localPosition = new Vector3(0f, (halfLen * progress) - 0.06f, 0f);
+                }
+                else if (lookDirection == Vector2.down) // 아래
+                {
+                    attackIndicator.transform.localScale = new Vector3(baseScale.y, baseScale.x * progress, 1f);
+                    attackIndicator.transform.localPosition = new Vector3(0f, (-halfLen * progress) - 0.06f, 0f);
+                }
+
+                yield return null; // 매 프레임 대기하며 갱신
             }
         }
 
-        // 4. 1초 동안 가만히 대기
-        yield return new WaitForSeconds(noticeDuration);
-
-        // 5. 대쉬 돌진 실행
+        // 5. 모든 칸이 다 채워지면 대쉬 돌진 실행
         if (attackIndicator != null) attackIndicator.SetActive(false);
         if (animator != null) animator.speed = originalAnimSpeed;
 
         rb.bodyType = RigidbodyType2D.Dynamic;
 
-        // 기준 길이를 속도로 나누어 대쉬 거리를 정확히 일치시킴
         float calculatedDuration = baseLength / dashSpeed;
         rb.linearVelocity = lookDirection * dashSpeed;
 
         yield return new WaitForSeconds(calculatedDuration);
 
-        // 6. 대쉬 종료 및 세팅 복구
         rb.linearVelocity = Vector2.zero;
         ResetRandomCooldown();
         isAttacking = false;
@@ -164,7 +165,6 @@ public class EnemyAttackPattern : MonoBehaviour
         cooldownTimer = Random.Range(minCooldown, maxCooldown);
     }
 
-    // ★ [수정]: 일반 물리 충돌(Is Trigger가 꺼져있을 때)에서도 대쉬 대미지가 들어가도록 추가
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (isAttacking && collision.gameObject.CompareTag("Player"))

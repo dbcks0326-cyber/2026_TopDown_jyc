@@ -196,7 +196,7 @@ MonoBehaviour:
   noticeDuration: 1
   dashSpeed: 2
   dashDamage: 40
-  dashTriggerDistance: 0.29
+  dashTriggerDistance: 0.35
   minCooldown: 3
   maxCooldown: 3
   attackIndicator: {fileID: 7076674897801384562}
@@ -368,7 +368,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.70767707, w: 0.7065361}
   m_LocalPosition: {x: 0.005, y: -0.18, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.08, z: 1}
+  m_LocalScale: {x: 0.35, y: 0.08, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7801631430306655008}

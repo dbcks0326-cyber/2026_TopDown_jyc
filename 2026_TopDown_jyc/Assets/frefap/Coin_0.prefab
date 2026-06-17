@@ -239,3 +239,6 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 766ee81311af2164ca6b6f9c09808477, type: 2}
   floatSpeed: 3
   floatAmplitude: 0.01
+  magnetRadius: 0.7
+  magnetSpeed: 0.2
+  acceleration: 0.1

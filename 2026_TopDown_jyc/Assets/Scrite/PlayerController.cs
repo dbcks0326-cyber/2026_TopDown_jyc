@@ -11,6 +11,10 @@ public class PlayerController : MonoBehaviour
     public bool canMove = true;
     public float moveSpeed = 5f;
 
+    [Header("대쉬 잔상 설정")]
+    [SerializeField] private GameObject ghostPrefab; // Inspector에서 잔상용 프리팹을 연결하세요!
+    [SerializeField] private float ghostInterval = 0.05f;
+
     [Header("기본 방향별 스프라이트 배열")]
     public Sprite[] spriteUp;
     public Sprite[] spriteDown;
@@ -192,29 +196,18 @@ public class PlayerController : MonoBehaviour
     // -------------------------------------------------------------
     // ★ [신규 추가]: Q 대쉬 전용 기동 코루틴
     // -------------------------------------------------------------
+    // 대쉬 루틴 안에서 잔상 생성을 호출하도록 수정 (기존 DashRoutine을 아래 것으로 대체)
     private IEnumerator DashRoutine()
     {
         isDashing = true;
 
-        // 대쉬 중에는 몬스터의 피격 판정을 가리기 위해 무적 코드로 연동 준비
-        Health playerHealth = GetComponent<Health>();
+        // ★ 잔상 생성 시작
+        StartCoroutine(DashGhostRoutine(dashDuration));
 
-        // 프로젝트에 구현된 무적 기능이 있다면 켜주기 (만약 스크립트에 구현되어 있다면 주석 해제하여 사용 가능)
-        // if(playerHealth != null) playerHealth.isInvincible = true; 
-
-        // 몬스터의 밀쳐내기나 지형 통과를 더 깔끔하게 하려면 Rigidbody 속도로 밀어주는 것이 정석입니다.
-        // 마지막으로 보던 방향(lastMoveDirection)으로 폭발적인 속도를 주입합니다.
         rb.linearVelocity = lastMoveDirection * dashSpeed;
-
-        // 지정된 시간(dashDuration) 동안 돌진 유지
         yield return new WaitForSeconds(dashDuration);
 
-        // 대쉬 타임이 종료되면 딱 브레이크 잡고 물리 정지
         rb.linearVelocity = Vector2.zero;
-
-        // 무적 풀어주기
-        // if(playerHealth != null) playerHealth.isInvincible = false;
-
         isDashing = false;
     }
 
@@ -374,5 +367,30 @@ public class PlayerController : MonoBehaviour
         float timeLeft = nextUseTime - Time.time;
         if (timeLeft > 0) cooldownImage.fillAmount = timeLeft / cooldownDuration;
         else cooldownImage.fillAmount = 0f;
+    }
+
+    // 잔상을 지속적으로 생성하는 코루틴
+    private IEnumerator DashGhostRoutine(float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            if (ghostPrefab != null)
+            {
+                GameObject ghost = Instantiate(ghostPrefab, transform.position, transform.rotation);
+                SpriteRenderer ghostSr = ghost.GetComponent<SpriteRenderer>();
+
+                if (ghostSr != null)
+                {
+                    ghostSr.sprite = sr.sprite;
+                    ghostSr.flipX = sr.flipX;
+                    // 여기서는 고정된 투명도를 주면, 붙어있는 GhostEffect 스크립트가 알아서 옅어지게 만듭니다.
+                    ghostSr.color = new Color(0.5f, 0.5f, 0.6f, 0.6f);
+                }
+            }
+
+            yield return new WaitForSeconds(ghostInterval);
+            elapsed += ghostInterval;
+        }
     }
 }
