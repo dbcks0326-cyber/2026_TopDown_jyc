@@ -4,8 +4,8 @@ using UnityEngine;
 public class EnemyHealth : Health
 {
     [Header("보스 설정")]
-    [SerializeField] private bool isBoss = false;             // 이 몬스터가 보스인지 여부
-    [SerializeField] private bool canKnockback = false;        // 보스가 넉백을 당할지 여부 (보통 false)
+    [SerializeField] private bool isBoss = false;
+    [SerializeField] private bool canKnockback = false;
     private SlimeBossController bossController;
 
     [Header("몬스터 드롭 세팅")]
@@ -14,27 +14,70 @@ public class EnemyHealth : Health
     [SerializeField] private int maxDropCount = 3;
 
     [Header("넉백 세팅")]
-    [SerializeField] private float knockbackForce = 1f;      // 일반 몬스터 넉백 힘
-    [SerializeField] private float knockbackDuration = 0.15f; // 넉백 지속 시간
+    [SerializeField] private float knockbackForce = 1f;
+    [SerializeField] private float knockbackDuration = 0.15f;
+
+    // ───────────────────────────────────────────────────────────
+    // ★ [추가]: 스폰 무적 관련 변수
+    // ───────────────────────────────────────────────────────────
+    [Header("스폰 무적 설정")]
+    [SerializeField] private float spawnInvincibleDuration = 1.0f; // 무적 시간 (1초)
+    private bool isSpawnInvincible = false;                        // 현재 무적 상태인가?
 
     private Rigidbody2D rb;
     private bool isKnockback = false;
-    private bool enrageUsed = false;                          // 폭주 패턴 중복 실행 방지 스위치
+    private bool enrageUsed = false;
 
     protected override void Start()
     {
         base.Start();
         rb = GetComponent<Rigidbody2D>();
 
-        // 만약 보스라면 보스 컨트롤러 컴포넌트를 미리 가져옵니다.
         if (isBoss)
         {
             bossController = GetComponent<SlimeBossController>();
+
+            if (BossHPBar.Instance != null)
+            {
+                BossHPBar.Instance.ShowHPBar();
+            }
         }
+
+        // ───────────────────────────────────────────────────────────
+        // ★ [추가]: 태어나자마자 1초 무적 코루틴 가동!
+        // ───────────────────────────────────────────────────────────
+        StartCoroutine(SpawnInvincibleRoutine());
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // ★ [추가]: 스폰 무적 타임 제어 코루틴
+    // ───────────────────────────────────────────────────────────
+    private IEnumerator SpawnInvincibleRoutine()
+    {
+        isSpawnInvincible = true;
+
+        // 투명도를 조절해서 무적 상태임을 연출하고 싶다면 반투명하게 바꿀 수 있습니다.
+        // 예: GetComponentInChildren<SpriteRenderer>().color = new Color(1,1,1, 0.5f);
+
+        yield return new WaitForSeconds(spawnInvincibleDuration);
+
+        isSpawnInvincible = false;
+
+        // 무적이 끝나면 원래 색상으로 복구
+        // 예: GetComponentInChildren<SpriteRenderer>().color = Color.white;
     }
 
     public override void TakeDamage(float damage)
     {
+        // ───────────────────────────────────────────────────────────
+        // ★ [추가]: 현재 스폰 무적 상태라면 아래 대미지 계산을 전부 씹어버림!
+        // ───────────────────────────────────────────────────────────
+        if (isSpawnInvincible)
+        {
+            Debug.Log($"{gameObject.name}: 스폰 무적 상태라 대미지를 받지 않습니다.");
+            return;
+        }
+
         // 1. [보스 특권]: 만약 보스가 현재 그로기(기절) 상태라면 대미지를 1.5배로 증폭해서 받습니다.
         if (isBoss && bossController != null && bossController.IsGroggy)
         {
@@ -50,7 +93,7 @@ public class EnemyHealth : Health
             UpdateBossHealthUI();
         }
 
-        // 4. [보스 특권]: 체력이 30% 이하로 떨어지면 딱 한 번 폭주 패턴 가동! (실수형 캐스팅 버그 방지)
+        // 4. [보스 특권]: 체력이 30% 이하로 떨어지면 딱 한 번 폭주 패턴 가동!
         if (isBoss && bossController != null && !enrageUsed)
         {
             float healthRatio = (float)currentHealth / maxHP;
@@ -65,7 +108,6 @@ public class EnemyHealth : Health
         // 5. 넉백 처리 (살아있고 넉백 중이 아닐 때)
         if (currentHealth > 0 && !isKnockback && rb != null)
         {
-            // 보스인데 넉백 면역(canKnockback = false) 상태라면 넉백 코루틴을 씹어버립니다.
             if (isBoss && !canKnockback) return;
 
             GameObject player = GameObject.FindWithTag("Player");
@@ -86,10 +128,12 @@ public class EnemyHealth : Health
         isKnockback = false;
     }
 
-    // ★ 보스 HP 바 UI를 업데이트하는 메서드 (기존 구현 방식이 있다면 그에 맞게 연동하세요)
     private void UpdateBossHealthUI()
     {
-        // 예시: BossUIManager.Instance.UpdateHP(currentHealth, maxHP);
+        if (BossHPBar.Instance != null)
+        {
+            BossHPBar.Instance.UpdateHP(currentHealth, maxHP);
+        }
     }
 
     public override void Die()
@@ -103,6 +147,11 @@ public class EnemyHealth : Health
                 Vector2 spawnPosition = (Vector2)transform.position + spawnOffset;
                 Instantiate(itemPrefab, spawnPosition, Quaternion.identity);
             }
+        }
+
+        if (isBoss && BossHPBar.Instance != null)
+        {
+            BossHPBar.Instance.HideHPBar();
         }
 
         base.Die();

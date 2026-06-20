@@ -14,8 +14,9 @@ GameObject:
   - component: {fileID: 5034436250527055564}
   - component: {fileID: 2494143813457211020}
   - component: {fileID: 6441656851274169592}
-  - component: {fileID: 4243157838851333034}
-  m_Layer: 0
+  - component: {fileID: 7888735390104882277}
+  - component: {fileID: 2031259623794636207}
+  m_Layer: 7
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -112,8 +113,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   canMove: 1
   moveSpeed: 1
-  ghostPrefab: {fileID: 0}
-  ghostInterval: 0.05
+  ghostPrefab: {fileID: 2399330046498899572, guid: 154fed48fdb000b418f7923a97fc7a83, type: 3}
+  ghostInterval: 0.04
   spriteUp:
   - {fileID: 5000927251509650613, guid: 1ef5a2a7ebf9b1f4189c3c8af7f48e85, type: 3}
   - {fileID: 564042922023100985, guid: 1ef5a2a7ebf9b1f4189c3c8af7f48e85, type: 3}
@@ -138,9 +139,9 @@ MonoBehaviour:
   allJobs: []
   dashSpeed: 2
   dashDuration: 0.2
-  qCooldown: 3
+  qCooldown: 5
   eAttackPrefab: {fileID: 3448932836465584840}
-  eDamage: 10
+  eDamage: 70
   eCooldown: 0.3
   rAttackPrefab: {fileID: 0}
   rDamage: 40
@@ -239,7 +240,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.0005411133, y: 0}
+  m_Offset: {x: 0.0005411133, y: -0.022071272}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -249,9 +250,23 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.10160228, y: 0.14}
+  m_Size: {x: 0.10160228, y: 0.09585744}
   m_EdgeRadius: 0
---- !u!114 &4243157838851333034
+--- !u!114 &7888735390104882277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 366075823233969008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f08ddadb27831248aae7f4a41511dd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHP: 100
+  isPlayer: 1
+--- !u!114 &2031259623794636207
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -273,18 +288,18 @@ MonoBehaviour:
   m_AlphaCutoff: 0.1
   m_ApplyToSortingLayers: 05fdad2a00000000
   m_ShapePath:
-  - {x: -0.048597097, y: -0.041849077, z: 0}
-  - {x: -0.03566152, y: -0.019773781, z: 0}
-  - {x: -0.050627828, y: 0.015503943, z: 0}
-  - {x: -0.03933227, y: 0.04755056, z: 0}
-  - {x: -0.003590852, y: 0.061115548, z: 0}
-  - {x: 0.04040125, y: 0.04291813, z: 0}
-  - {x: 0.049503893, y: 0.013722241, z: 0}
-  - {x: 0.032399565, y: -0.019061103, z: 0}
-  - {x: 0.047884375, y: -0.04149273, z: 0}
-  - {x: 0.016720563, y: -0.0700178, z: 0}
-  - {x: -0.017131805, y: -0.07073049, z: 0}
-  m_ShapePathHash: -774720985
+  - {x: -0.049245536, y: -0.042928427, z: 0}
+  - {x: -0.036115706, y: -0.023425624, z: 0}
+  - {x: -0.050578594, y: 0.015512943, z: 0}
+  - {x: -0.03812024, y: 0.04886192, z: 0}
+  - {x: -0.0005147159, y: 0.060384996, z: 0}
+  - {x: 0.03886196, y: 0.046266012, z: 0}
+  - {x: 0.048807472, y: 0.014400408, z: 0}
+  - {x: 0.033232003, y: -0.024167314, z: 0}
+  - {x: 0.047020525, y: -0.0410742, z: 0}
+  - {x: 0.017285734, y: -0.06941022, z: 0}
+  - {x: -0.015719295, y: -0.06903936, z: 0}
+  m_ShapePathHash: -112290385
   m_InstanceId: 0
   m_ShadowShape2DComponent: {fileID: 0}
   m_ShadowShape2DProvider:
@@ -293,18 +308,18 @@ MonoBehaviour:
   m_ShadowMesh:
     m_Mesh: {fileID: 0}
     m_LocalBounds:
-      m_Center: {x: -0.0005619675, y: -0.004807472, z: 0}
-      m_Extent: {x: 0.05006586, y: 0.06592302, z: 0}
+      m_Center: {x: -0.0008855611, y: -0.004512608, z: 0}
+      m_Extent: {x: 0.049693033, y: 0.06489761, z: 0}
     m_EdgeProcessing: 1
-    m_TrimEdge: 0.01
+    m_TrimEdge: 0.006
     m_FlipX: 0
     m_FlipY: 0
     m_InitialTrim: 0
   m_CastingOption: 1
-  m_PreviousTrimEdge: 0.01
+  m_PreviousTrimEdge: 0.006
   m_PreviousEdgeProcessing: 1
   m_PreviousShadowCastingSource: 1
-  m_PreviousShadowShape2DSource: {fileID: 6441656851274169592}
+  m_PreviousShadowShape2DSource: {fileID: 4403498881635189150}
   references:
     version: 2
     RefIds:
@@ -320,7 +335,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8349569478101752844}
   - component: {fileID: 6829877653511169889}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: "\uADF8\uB9BC\uC790"
   m_TagString: Untagged
   m_Icon: {fileID: 0}

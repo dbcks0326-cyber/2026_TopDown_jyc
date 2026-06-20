@@ -104,8 +104,11 @@ public class PlayerController : MonoBehaviour
     {
         if (Keyboard.current != null)
         {
-            // ★ 대쉬 중이 아닐 때만 일반 이동 입력 가동
-            if (canMove && !isAttacking && !isDashing)
+            // -------------------------------------------------------------
+            // ★ [수정]: 조건문에서 !isAttacking을 제거했습니다.
+            // 이제 공격 스킬(E, R)이 켜져 있는 중에도 키보드 이동 입력을 정상적으로 받습니다!
+            // -------------------------------------------------------------
+            if (canMove && !isDashing)
             {
                 float moveX = 0f;
                 float moveY = 0f;
@@ -127,7 +130,7 @@ public class PlayerController : MonoBehaviour
                 HandleDirectionRotation();
             }
 
-            // ★ [변경]: Q 키 입력 시 대쉬 루틴(DashRoutine)을 호출합니다!
+            // ★ Q 키 입력 체크 (대쉬 중이거나 일반 공격 중일 땐 차단하는 로직은 유지)
             if (Keyboard.current.qKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
             {
                 if (Time.time >= nextQAttackTime)
@@ -162,7 +165,8 @@ public class PlayerController : MonoBehaviour
         UpdateCooldownUI(nextEAttackTime, eCooldown, eCooldownImage);
         UpdateCooldownUI(nextRAttackTime, rCooldown, rCooldownImage);
 
-        if (isAttacking || isDashing) return;
+        // ★ 대쉬 중일 때는 걷기 애니메이션 프레임 계산 생략
+        if (isDashing) return;
 
         if (input.sqrMagnitude <= 0.01f)
         {
@@ -185,7 +189,11 @@ public class PlayerController : MonoBehaviour
         // ★ 대쉬 중일 때는 고유 물리 주행을 하므로 FixedUpdate 연산을 생략합니다.
         if (isDashing) return;
 
-        if (!canMove || isAttacking)
+        // -------------------------------------------------------------
+        // ★ [수정]: 조건문에서 isAttacking 차단을 삭제했습니다!
+        // 이제 공격을 실행해도 속도(linearVelocity)가 Zero로 묶이지 않고 뚫고 지나갑니다.
+        // -------------------------------------------------------------
+        if (!canMove)
         {
             rb.linearVelocity = Vector2.zero;
             return;
@@ -193,10 +201,7 @@ public class PlayerController : MonoBehaviour
         rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
     }
 
-    // -------------------------------------------------------------
-    // ★ [신규 추가]: Q 대쉬 전용 기동 코루틴
-    // -------------------------------------------------------------
-    // 대쉬 루틴 안에서 잔상 생성을 호출하도록 수정 (기존 DashRoutine을 아래 것으로 대체)
+    // 대쉬 루틴 안에서 잔상 생성을 호출하도록 수정
     private IEnumerator DashRoutine()
     {
         isDashing = true;
@@ -275,9 +280,19 @@ public class PlayerController : MonoBehaviour
         if (attackPrefab == null) yield break;
 
         isAttacking = true;
-        rb.linearVelocity = Vector2.zero;
-        velocity = Vector2.zero;
 
+        // 💡 플레이어가 걸어다니면서 쏠 수 있게 공격 직후 멈춰 세우던 아래 물리 초기화 두 줄은 주석 처리했습니다.
+        // rb.linearVelocity = Vector2.zero;
+        // velocity = Vector2.zero;
+
+        // 프리팹이 켜지기 전에 대미지를 먼저 배달합니다.
+        PlayerAttack attackScript = attackPrefab.GetComponent<PlayerAttack>();
+        if (attackScript != null)
+        {
+            attackScript.SetAttackDamage(skillDamage);
+        }
+
+        // 대미지 주입이 완료된 후, 프리팹을 활성화!
         attackPrefab.SetActive(true);
 
         Animator effectAnim = attackPrefab.GetComponent<Animator>();
@@ -340,11 +355,11 @@ public class PlayerController : MonoBehaviour
                 Destroy(collision.gameObject);
             }
         }
-        if (collision.CompareTag("Respawn"))
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            return;
-        }
+       // if (collision.CompareTag("Respawn"))
+      //  {
+       //     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+      //      return;
+      //  }
         if (collision.CompareTag("Finish"))
         {
             GameDataManager.Instance.SaveData(GameDataManager.Instance.playerData);
@@ -384,12 +399,12 @@ public class PlayerController : MonoBehaviour
                 {
                     ghostSr.sprite = sr.sprite;
                     ghostSr.flipX = sr.flipX;
-                    // 여기서는 고정된 투명도를 주면, 붙어있는 GhostEffect 스크립트가 알아서 옅어지게 만듭니다.
-                    ghostSr.color = new Color(0.5f, 0.5f, 0.6f, 0.6f);
+                    ghostSr.color = new Color(0.5f, 0.5f, 0.6f, 0.8f);
                 }
             }
 
             yield return new WaitForSeconds(ghostInterval);
+            // 대쉬 도중 프레임 연산 오차 방지를 위해 안전하게 누적 처리
             elapsed += ghostInterval;
         }
     }
