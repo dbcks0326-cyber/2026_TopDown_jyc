@@ -32,7 +32,7 @@ public class EnemyTraceController : MonoBehaviour
         if (playerObj != null)
         {
             player = playerObj.transform;
-            Debug.Log("플레이어 인식 성공 " + playerObj.name);
+          //  Debug.Log("플레이어 인식 성공 " + playerObj.name);
         }
     }
 

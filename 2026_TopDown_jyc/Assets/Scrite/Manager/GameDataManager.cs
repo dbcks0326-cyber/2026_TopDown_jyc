@@ -21,12 +21,20 @@ public class PlayerData
     // -------------------------------------------------------------
     public float maxHp = 100f;
     public float currentHp = 100f;
+
+    public string equippedItemName = "";
 }
 
 public class GameDataManager : MonoBehaviour
 {
     public static GameDataManager Instance;
     public PlayerData playerData;
+
+    // ───────────────────────────────────────────────────────────
+    // ★ [형님 말씀대로 추가]: 중앙 서버 역하을 할 전체 아이템 원본 리스트
+    // ───────────────────────────────────────────────────────────
+    [Header("게임 내 전체 아이템 데이터 원본 목록")]
+    public List<itemso> allItemSOList = new List<itemso>();
 
     public void Awake()
     {
@@ -36,6 +44,20 @@ public class GameDataManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
 
             playerData = LoadData();
+
+            // ───────────────────────────────────────────────────────────
+            // ★ [자동화 추가]: 게임 켜지자마자 Resources/SoCOin 폴더 안의 모든 템 정보 긁어오기
+            // ───────────────────────────────────────────────────────────
+            itemso[] loadedItems = Resources.LoadAll<itemso>("SoCOin");
+            if (loadedItems != null && loadedItems.Length > 0)
+            {
+                allItemSOList = new List<itemso>(loadedItems);
+                Debug.Log($"📦 [GameDataManager] Resources/SoCOin 폴더에서 {allItemSOList.Count}개의 아이템 원본을 무사히 로드했습니다!");
+            }
+            else
+            {
+                Debug.LogError("🚨 [GameDataManager 에러] Resources/SoCOin 폴더가 비어있거나 경로가 잘못되었습니다!");
+            }
         }
         else
         {

@@ -11,6 +11,10 @@ public class PlayerController : MonoBehaviour
     public bool canMove = true;
     public float moveSpeed = 5f;
 
+    private float equipmentSpeedBonus = 0f;
+
+    private itemso equippedItem = null;
+
     [Header("대쉬 잔상 설정")]
     [SerializeField] private GameObject ghostPrefab; // Inspector에서 잔상용 프리팹을 연결하세요!
     [SerializeField] private float ghostInterval = 0.05f;
@@ -22,6 +26,7 @@ public class PlayerController : MonoBehaviour
     public Sprite[] spriteRight;
 
     public float frameTim = 0.15f;
+
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
@@ -79,6 +84,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        // 1. [순서 보장 1] 기존 직업 데이터 불러오기 로직 (기본 moveSpeed가 먼저 결정됨)
         string savedJobName = GameDataManager.Instance.playerData.currentJob;
         JobData savedJob = allJobs.Find(job => job.jobName == savedJobName);
         if (savedJob != null)
@@ -86,6 +92,27 @@ public class PlayerController : MonoBehaviour
             ChangeJob(savedJob);
         }
 
+        // ───────────────────────────────────────────────────────────
+        // ★ [중요 수정]: 인벤토리 UI 안 거치고, GameDataManager에서 직접 템 꺼내서 장착!
+        // ───────────────────────────────────────────────────────────
+        string savedItemName = GameDataManager.Instance.playerData.equippedItemName;
+        if (!string.IsNullOrEmpty(savedItemName))
+        {
+            // 중앙 데이터 매니저가 로드해둔 올 아이템 리스트에서 "er"을 찾습니다.
+            itemso savedItem = GameDataManager.Instance.allItemSOList.Find(item => item.itemName == savedItemName);
+            if (savedItem != null)
+            {
+                // 찾았다면 즉시 장착해서 equipmentSpeedBonus 수치를 정상 주입!
+                EquipItem(savedItem);
+                Debug.Log($"✨ [씬 이동 완료] 데이터 매니저를 통해 {savedItem.itemName} 자동 재장착 및 스탯 적용 완료!");
+            }
+            else
+            {
+                Debug.LogWarning($"⚠️ [장착 실패] 데이터 매니저 리스트에서 '{savedItemName}' 아이템을 찾을 수 없습니다.");
+            }
+        }
+
+        // 2. 기존 체력 및 UI 초기화 로직
         Health playerHealth = GetComponent<Health>();
         if (playerHealth != null)
         {
@@ -108,6 +135,7 @@ public class PlayerController : MonoBehaviour
             // ★ [수정]: 조건문에서 !isAttacking을 제거했습니다.
             // 이제 공격 스킬(E, R)이 켜져 있는 중에도 키보드 이동 입력을 정상적으로 받습니다!
             // -------------------------------------------------------------
+            // Update() 함수 내부의 이동 입력 처리 부분입니다.
             if (canMove && !isDashing)
             {
                 float moveX = 0f;
@@ -119,9 +147,13 @@ public class PlayerController : MonoBehaviour
                 if (Keyboard.current.wKey.isPressed) moveY = 1f;
 
                 input = new Vector2(moveX, moveY);
-                velocity = input.normalized * moveSpeed;
 
-                // 마지막으로 바라본 유효한 방향을 항상 기억 (가만히 서서 Q 눌러도 대쉬해 나가게 함)
+                // ❌ 기존 코드: velocity = input.normalized * moveSpeed;
+                // ───────────────────────────────────────────────────────────
+                // ★ [수정]: 기본 속도에 장비 보너스 속도를 더해서 최종 속도를 냅니다!
+                // ───────────────────────────────────────────────────────────
+                velocity = input.normalized * (moveSpeed + equipmentSpeedBonus);
+
                 if (input.sqrMagnitude > 0.01f)
                 {
                     lastMoveDirection = input.normalized;
@@ -345,21 +377,52 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // [로그 1] 충돌이 일어났을 때 무조건 실행되는 로그
+        Debug.Log($"[인벤토리 체크] 무언가와 부딪힘! 부딪힌 오브젝트 이름: {collision.gameObject.name}, 태그: {collision.tag}");
+
         if (collision.CompareTag("Coin"))
         {
+            // [로그 2] 태그가 "Coin"인 것을 정상적으로 인식했을 때
+            Debug.Log($"[인벤토리 체크] 'Coin' 태그 인식 성공! itemOB 컴포넌트를 가져옵니다.");
+
             itemOB coinItem = collision.GetComponent<itemOB>();
             if (coinItem != null)
             {
-                GameDataManager.Instance.playerData.collectedItems.Add(coinItem.GetItemName());
-                GameDataManager.Instance.playerData.coin += coinItem.GetCoin();
+                // [로그 3] itemOB 컴포넌트까지 성공적으로 가져왔을 때
+                string itemName = coinItem.GetItemName();
+                int coinAmount = coinItem.GetCoin();
+                Debug.Log($"[인벤토리 체크] 아이템 정보 획득 성공 -> 이름: {itemName}, 코인 수량: {coinAmount}");
+
+                // 1. 데이터 매니저 리스트에 아이템 이름 저장 및 코인 증가 (기존 로직)
+                GameDataManager.Instance.playerData.collectedItems.Add(itemName);
+                GameDataManager.Instance.playerData.coin += coinAmount;
+
+                // ★ 추가된 디버그 로그: 데이터 매니저에 잘 들어갔는지 확인
+                Debug.Log($"[인벤토리 체크] 데이터 매니저 저장 완료! 현재 소지품 개수: {GameDataManager.Instance.playerData.collectedItems.Count}개");
+
+                // 2. 씬에 존재하는 이미지 인벤토리 UI를 찾아 실시간으로 새로고침합니다.
+                UI_ImageInventory imgInv = FindFirstObjectByType<UI_ImageInventory>();
+                if (imgInv != null)
+                {
+                    Debug.Log("[인벤토리 체크] UI_ImageInventory 스크립트를 찾았습니다! UI를 새로고침합니다.");
+                    imgInv.UpdateInventoryUI();
+                }
+                else
+                {
+                    // UI 스크립트를 못 찾으면 경고를 띄웁니다.
+                    Debug.LogWarning("[인벤토리 체크 경고] 씬에 UI_ImageInventory 오브젝트가 없거나 꺼져있습니다! (I 키를 눌러 켜는 구조라면 정상일 수 있음)");
+                }
+
+                // 3. 먹은 아이템 오브젝트 파괴 (기존 로직)
                 Destroy(collision.gameObject);
             }
+            else
+            {
+                // [에러 로그] 오브젝트에 itemOB 스크립트가 없을 때
+                Debug.LogError($"[인벤토리 에러] {collision.gameObject.name}에 'itemOB' 스크립트(컴포넌트)가 붙어있지 않습니다!");
+            }
         }
-       // if (collision.CompareTag("Respawn"))
-      //  {
-       //     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-      //      return;
-      //  }
+
         if (collision.CompareTag("Finish"))
         {
             GameDataManager.Instance.SaveData(GameDataManager.Instance.playerData);
@@ -367,6 +430,45 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // ───────────────────────────────────────────────────────────
+    // ★ [추가]: 인벤토리 슬롯에서 호출할 실질적인 장착 및 해제 함수
+    // ───────────────────────────────────────────────────────────
+    public void EquipItem(itemso newItem)
+    {
+        if (equippedItem != null)
+        {
+            UnequipItem();
+        }
+
+        equippedItem = newItem;
+        equipmentSpeedBonus = newItem.speedBonus;
+
+        // ★ 데이터 매니저에 현재 장착한 아이템 이름 기록하고 저장!
+        GameDataManager.Instance.playerData.equippedItemName = newItem.itemName;
+        GameDataManager.Instance.SaveData(GameDataManager.Instance.playerData);
+
+        Debug.Log($"⚔️ [플레이어 장착 완료] {newItem.itemName} 장착! 보너스 이속: +{equipmentSpeedBonus}");
+    }
+
+    public void UnequipItem()
+    {
+        if (equippedItem == null) return;
+
+        Debug.Log($"🛡️ [플레이어 장착 해제] {equippedItem.itemName} 해제! 스탯이 원상복구됩니다.");
+
+        equipmentSpeedBonus = 0f;
+        equippedItem = null;
+
+        // ★ 데이터 매니저에서 장착한 아이템 이름 지우고 저장!
+        GameDataManager.Instance.playerData.equippedItemName = "";
+        GameDataManager.Instance.SaveData(GameDataManager.Instance.playerData);
+    }
+
+    // ★ [추가 된 꿀함수]: UI 슬롯에서 지금 이 아이템이 장착된 상태인지 편하게 알아보기 위해 사용
+    public itemso GetEquippedItem()
+    {
+        return equippedItem;
+    }
     public void ChangeJob(JobData newJob)
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
@@ -408,4 +510,6 @@ public class PlayerController : MonoBehaviour
             elapsed += ghostInterval;
         }
     }
+
+
 }

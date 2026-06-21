@@ -4,6 +4,16 @@ using UnityEngine.InputSystem;
 
 public class ShopNPC : MonoBehaviour
 {
+    // ★ 추가: 상점의 종류를 선택하는 열거형(Enum)
+    public enum ShopType { SellJob, SellItem }
+
+    [Header("★ 상점 타입 설정")]
+    public ShopType shopType = ShopType.SellJob; // 인스펙터에서 직업을 팔지, 아이템을 팔지 고릅니다.
+
+    [Header("판매할 상품 데이터 (타입에 맞게 채워주세요)")]
+    public JobData sellJobData; // 직업 상점일 때 채우기 (전사, 기사 등)
+    public itemso sellItemData; // 아이템 상점일 때 채우기 (er, 신발 등)
+
     // 플레이어 근처 체크
     bool canTalk;
 
@@ -13,7 +23,7 @@ public class ShopNPC : MonoBehaviour
     // 구매 질문 출력 중인지
     bool isAsking = false;
 
-    // ★ 추가: 결과 대사(성공/취소/돈부족)가 출력 중인지 체크
+    // 결과 대사(성공/취소/돈부족)가 출력 중인지 체크
     bool isShowingResult = false;
 
     [Header("상인 이름")]
@@ -42,11 +52,7 @@ public class ShopNPC : MonoBehaviour
     [Header("말풍선")]
     public GameObject bubblePanel;
 
-    [Header("판매할 직업 데이터")]
-    public JobData sellJobData; // 인스펙터에서 전사, 마법사 등의 에셋을 넣습니다.
-
     public TextMeshProUGUI bubbleText;
-
     public TextMeshProUGUI nameText;
 
     // 첫 설명 여부
@@ -54,7 +60,8 @@ public class ShopNPC : MonoBehaviour
 
     void Start()
     {
-        bubblePanel.SetActive(false);
+        if (bubblePanel != null)
+            bubblePanel.SetActive(false);
     }
 
     void Update()
@@ -64,19 +71,17 @@ public class ShopNPC : MonoBehaviour
             return;
 
         // -----------------------------
-        // ★ 추가: 결과 대사 출력 중일 때의 처리
+        // 결과 대사 출력 중일 때의 처리
         // -----------------------------
         if (isShowingResult)
         {
-            // 결과 대사 출력이 완전히 끝났다면
             if (!DialogueManager.Instance.IsDialogue())
             {
-                // 완전히 대화를 종료하고 상점 상태를 리셋합니다.
                 isShowingResult = false;
                 bubblePanel.SetActive(false);
                 DialogueManager.Instance.SetWaitingInput(false);
             }
-            return; // 결과 대사 중에는 아래의 구매 관련 로직을 절대 실행하지 않음
+            return;
         }
 
         // -----------------------------
@@ -84,7 +89,6 @@ public class ShopNPC : MonoBehaviour
         // -----------------------------
         if (isAsking)
         {
-            // 대화 종료 시 (타이핑이 모두 끝났을 때)
             if (!DialogueManager.Instance.IsDialogue())
             {
                 isAsking = false;
@@ -105,7 +109,7 @@ public class ShopNPC : MonoBehaviour
             {
                 waitingChoice = false;
                 DialogueManager.Instance.SetWaitingInput(false);
-                BuyJob();
+                ProcessPurchase(); // 직업/아이템을 구분하여 구매 연산 처리
                 return;
             }
 
@@ -115,7 +119,6 @@ public class ShopNPC : MonoBehaviour
                 waitingChoice = false;
                 DialogueManager.Instance.SetWaitingInput(false);
 
-                // 결과 대사 상태로 변경
                 isShowingResult = true;
                 DialogueManager.Instance.ChangeText(cancelDialogue);
                 return;
@@ -132,13 +135,10 @@ public class ShopNPC : MonoBehaviour
             if (DialogueManager.Instance == null)
                 return;
 
-            // 이미 대화 중이면 종료
             if (DialogueManager.Instance.IsDialogue())
                 return;
 
-            // -----------------------------
             // 첫 설명
-            // -----------------------------
             if (!explained)
             {
                 DialogueManager.Instance.StartDialogue(
@@ -153,12 +153,8 @@ public class ShopNPC : MonoBehaviour
                 return;
             }
 
-            // -----------------------------
             // 구매 질문 시작
-            // -----------------------------
             isAsking = true;
-
-            // Y/N 대기 상태 설정
             DialogueManager.Instance.SetWaitingInput(true);
 
             DialogueManager.Instance.StartDialogue(
@@ -171,55 +167,83 @@ public class ShopNPC : MonoBehaviour
         }
     }
 
-    // -----------------------------
-    // 실제 구매 처리
-    // -----------------------------
-    // -----------------------------
-    // 실제 구매 처리 (버그 수정 반영)
-    // -----------------------------
-    // -----------------------------
-    // 실제 구매 처리 (돈 부족 버그 완벽 수정)
-    // -----------------------------
-    void BuyJob()
+    // ───────────────────────────────────────────────────────────
+    // ★ [핵심 개조]: 상점 타입에 따라 가격 책정 및 재화 차감 후 지급 처리
+    // ───────────────────────────────────────────────────────────
+    void ProcessPurchase()
     {
-        // 1. 현재 플레이어의 코인 양을 가져옵니다.
-        int coin = GameDataManager.Instance.playerData.coin;
+        int currentCoin = GameDataManager.Instance.playerData.coin;
+        int price = 0;
 
-        // 2. [돈 부족 체크] 가진 돈이 직업 가격보다 적다면?
-        if (coin < sellJobData.price)
+        // 1. 상점 타입에 따라 가격 책정 및 데이터 예외 확인
+        if (shopType == ShopType.SellJob)
+        {
+            if (sellJobData == null)
+            {
+                Debug.LogError($"🚨 [{npcName}] 직업 상점인데 SellJobData가 비어있습니다!");
+                return;
+            }
+            price = sellJobData.price;
+        }
+        else if (shopType == ShopType.SellItem)
+        {
+            if (sellItemData == null)
+            {
+                Debug.LogError($"🚨 [{npcName}] 아이템 상점인데 SellItemData가 비어있습니다!");
+                return;
+            }
+            // ※ itemso 스크립트에 가격 변수명이 다를 경우(예: itemPrice 등) 해당 변수명으로 변경하세요.
+            price = sellItemData.price;
+        }
+
+        // 2. 돈 부족 체크
+        if (currentCoin < price)
         {
             isShowingResult = true;
-            
-            // "돈이 부족합니다" 대사 출력
             DialogueManager.Instance.ChangeText(noMoneyDialogue);
-            
-            // ★ 중요: 돈이 없으므로 아래의 코인 차감/직업 변경을 하지 못하도록 
-            // 여기서 함수를 즉시 종료(return)합니다!
-            return; 
+            return;
         }
 
-        // 3. [돈이 충분할 때만 실행되는 구간] 코인 차감
-        GameDataManager.Instance.playerData.coin -= sellJobData.price;
-        
-        // 4. 플레이어에게 직업 데이터 전달 및 세이브 데이터에 직업 이름 기록
-        PlayerController player = DialogueManager.Instance.player;
-        if (player != null)
+        // 3. 돈이 충분하므로 코인 차감
+        GameDataManager.Instance.playerData.coin -= price;
+
+        // 4. 상점 타입별 보상 지급 처리
+        if (shopType == ShopType.SellJob)
         {
-            player.ChangeJob(sellJobData);
-            GameDataManager.Instance.playerData.currentJob = sellJobData.jobName;
+            // 직업 변경 및 기록
+            PlayerController player = DialogueManager.Instance.player;
+            if (player != null)
+            {
+                player.ChangeJob(sellJobData);
+                GameDataManager.Instance.playerData.currentJob = sellJobData.jobName;
+            }
+            Debug.Log($"🛒 [{npcName}] 직업 구매 완료: {sellJobData.jobName}, 차감 코인: {price}");
+        }
+        else if (shopType == ShopType.SellItem)
+        {
+            // 인벤토리 수집 목록 리스트에 아이템 이름 추가!
+            if (!GameDataManager.Instance.playerData.collectedItems.Contains(sellItemData.itemName))
+            {
+                GameDataManager.Instance.playerData.collectedItems.Add(sellItemData.itemName);
+            }
+
+            // 인게임에 인벤토리 UI가 켜져 있다면 바로 아이템 아이콘이 뜨도록 동기화
+            UI_ImageInventory imgInv = FindFirstObjectByType<UI_ImageInventory>();
+            if (imgInv != null)
+            {
+                imgInv.UpdateInventoryUI();
+            }
+            Debug.Log($"🛒 [{npcName}] 아이템 구매 완료: {sellItemData.itemName}, 차감 코인: {price}");
         }
 
-        // 5. JSON 파일로 저장
+        // 5. JSON 데이터 저장 고정
         GameDataManager.Instance.SaveData(GameDataManager.Instance.playerData);
 
-        // 6. 구매 완료 대사 출력
+        // 6. 완료 대사 출력
         isShowingResult = true;
         DialogueManager.Instance.ChangeText(successDialogue);
     }
 
-    // -----------------------------
-    // 플레이어 접근 및 멀어짐 (기존과 동일)
-    // -----------------------------
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
@@ -235,8 +259,9 @@ public class ShopNPC : MonoBehaviour
             canTalk = false;
             waitingChoice = false;
             isAsking = false;
-            isShowingResult = false; // 리셋
-            bubblePanel.SetActive(false);
+            isShowingResult = false;
+            if (bubblePanel != null)
+                bubblePanel.SetActive(false);
             DialogueManager.Instance.SetWaitingInput(false);
         }
     }
