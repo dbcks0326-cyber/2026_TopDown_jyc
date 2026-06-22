@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 814ab6822fedd5a44ba4fd027bf6cfaf, type: 3}
+  m_Name: Crystal Ring
+  m_EditorClassIdentifier: Assembly-CSharp::itemso
+  point: 0
+  itemName: Crystal Ring
+  price: 20
+  itemIcon: {fileID: 21300000, guid: b6922756c0554cd4d835cd6970586279, type: 3}
+  itemType: 0
+  itemDescription: "\uACF5\uACA9\uB825\uC744 \uC911\uD3ED \uC62C\uB824\uC900\uB2E4."
+  speedBonus: 0
+  attackBonus: 30
