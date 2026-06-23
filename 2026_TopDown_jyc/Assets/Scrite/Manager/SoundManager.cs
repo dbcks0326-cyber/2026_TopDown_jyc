@@ -12,10 +12,14 @@ public class Soundmanager : MonoBehaviour
     public AudioClip click;
 
     public AudioClip Text;
+    AudioSource audioSourceFootstep;
 
+    public AudioClip dashSound;
     AudioSource audioSourceBGM;
     AudioSource audioSource;
     AudioSource audioSourceText;
+    [SerializeField] private AudioClip[] footstepClips;
+    [SerializeField] private AudioClip bossImpactClip;
 
     private void Start()
     {
@@ -30,9 +34,12 @@ public class Soundmanager : MonoBehaviour
 
         audioSource.volume = data.volume;
         audioSourceText.volume = data.volume;
+        audioSourceFootstep.volume = data.volume;
 
         PlayBGM();
     }
+
+
     void Awake()
     {
         Instance = this;
@@ -41,7 +48,8 @@ public class Soundmanager : MonoBehaviour
         audioSourceBGM = gameObject.AddComponent<AudioSource>();
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSourceText = gameObject.AddComponent<AudioSource>();
-       
+        audioSourceFootstep = gameObject.AddComponent<AudioSource>();
+
     }
 
     // Update is called once per frame
@@ -98,6 +106,7 @@ public class Soundmanager : MonoBehaviour
     {
         audioSource.volume = volume;
         audioSourceText.volume = volume;
+        audioSourceFootstep.volume = volume;
 
         GameDataManager.Instance.playerData.volume = volume;
 
@@ -115,5 +124,33 @@ public class Soundmanager : MonoBehaviour
     public void TextSound()
     {
         audioSource.PlayOneShot(Text);
+    }
+
+    public void PlayFootstep()
+    {
+        if (footstepClips == null || footstepClips.Length == 0)
+            return;
+
+        int randomIndex =
+            Random.Range(0, footstepClips.Length);
+
+        audioSourceFootstep.PlayOneShot(
+            footstepClips[randomIndex]);
+    }
+
+    public void PlayBossImpact()
+    {
+        if (bossImpactClip == null)
+            return;
+
+        audioSource.PlayOneShot(bossImpactClip);
+    }
+
+    public void PlayDashSound()
+    {
+        if (dashSound != null)
+        {
+            audioSource.PlayOneShot(dashSound);
+        }
     }
 }

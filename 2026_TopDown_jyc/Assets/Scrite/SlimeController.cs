@@ -207,6 +207,7 @@ public class SlimeBossController : MonoBehaviour
             FollowingCamera.Instance.Shake(0.25f, 0.2f, 8);
         }
 
+        Soundmanager.Instance.PlayBossImpact();
         // 플레이어 스킬처럼 착지 충격파를 순간적으로 켰다가 꺼줍니다!
         if (landingAttackObj != null && !IsGroggy)
         {

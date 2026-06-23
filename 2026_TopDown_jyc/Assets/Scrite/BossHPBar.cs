@@ -37,6 +37,8 @@ public class BossHPBar : MonoBehaviour
     // 보스가 스폰될 때 호출
     public void ShowHPBar()
     {
+        Debug.Log("HP바 켜짐");
+
         if (hpBarGroup != null) hpBarGroup.SetActive(true);
         if (bossHpImage != null) bossHpImage.fillAmount = 1f; // 처음엔 풀피(100%)로 채우기
 

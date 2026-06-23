@@ -41,6 +41,11 @@ public class PlayerController : MonoBehaviour
 
     private bool isHurt = false;
 
+    private float nextFootstepTime = 0f;
+
+    [SerializeField]
+    private float footstepInterval = 0.3f;
+
     [Header("Q スキル設定 (대쉬)")]
     [SerializeField] private float dashSpeed = 15f;
     [SerializeField] private float dashDuration = 0.2f;
@@ -118,84 +123,89 @@ public class PlayerController : MonoBehaviour
         if (rAttackPrefab != null) rAttackPrefab.SetActive(false);
     }
 
-    private void Update()
-    {
-        if (Keyboard.current != null)
+        private void Update()
         {
-            if (canMove && !isDashing)
+            if (Keyboard.current != null)
             {
-                float moveX = 0f;
-                float moveY = 0f;
-
-                if (Keyboard.current.aKey.isPressed) moveX = -1f;
-                if (Keyboard.current.dKey.isPressed) moveX = 1f;
-                if (Keyboard.current.sKey.isPressed) moveY = -1f;
-                if (Keyboard.current.wKey.isPressed) moveY = 1f;
-
-                input = new Vector2(moveX, moveY);
-                velocity = input.normalized * (moveSpeed + equipmentSpeedBonus);
-
-                if (input.sqrMagnitude > 0.01f)
+                if (canMove && !isDashing)
                 {
-                    lastMoveDirection = input.normalized;
+                    float moveX = 0f;
+                    float moveY = 0f;
+
+                    if (Keyboard.current.aKey.isPressed) moveX = -1f;
+                    if (Keyboard.current.dKey.isPressed) moveX = 1f;
+                    if (Keyboard.current.sKey.isPressed) moveY = -1f;
+                    if (Keyboard.current.wKey.isPressed) moveY = 1f;
+
+                    input = new Vector2(moveX, moveY);
+                    velocity = input.normalized * (moveSpeed + equipmentSpeedBonus);
+
+                    if (input.sqrMagnitude > 0.01f)
+                    {
+                        lastMoveDirection = input.normalized;
+                    }
+
+                    HandleDirectionRotation();
                 }
 
-                HandleDirectionRotation();
-            }
-
-            if (Keyboard.current.qKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
-            {
-                if (Time.time >= nextQAttackTime)
+                if (Keyboard.current.qKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
                 {
-                    nextQAttackTime = Time.time + qCooldown;
-                    StartCoroutine(DashRoutine());
+                    if (Time.time >= nextQAttackTime)
+                    {
+                        nextQAttackTime = Time.time + qCooldown;
+                        StartCoroutine(DashRoutine());
+                    }
+                }
+
+                // ⭐ [수정]: 스킬을 쓸 때 기본 데미지(eDamage)에 아이템 보너스 데미지를 더해서 보냅니다!
+                if (Keyboard.current.eKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
+                {
+                    if (Time.time >= nextEAttackTime)
+                    {
+                        nextEAttackTime = Time.time + eCooldown;
+                        float finalDamage = eDamage + equipmentDamageBonus; // 최종 데미지 계산
+                        StartCoroutine(AttackRoutine(eAttackPrefab, finalDamage));
+                    }
+                }
+
+                // ⭐ [수정]: 궁극기도 마찬가지로 아이템 보너스 데미지를 합산합니다!
+                if (Keyboard.current.rKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
+                {
+                    if (Time.time >= nextRAttackTime)
+                    {
+                        nextRAttackTime = Time.time + rCooldown;
+                        float finalDamage = rDamage + equipmentDamageBonus; // 최종 데미지 계산
+                        StartCoroutine(AttackRoutine(rAttackPrefab, finalDamage));
+                    }
                 }
             }
 
-            // ⭐ [수정]: 스킬을 쓸 때 기본 데미지(eDamage)에 아이템 보너스 데미지를 더해서 보냅니다!
-            if (Keyboard.current.eKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
+            UpdateCooldownUI(nextQAttackTime, qCooldown, qCooldownImage);
+            UpdateCooldownUI(nextEAttackTime, eCooldown, eCooldownImage);
+            UpdateCooldownUI(nextRAttackTime, rCooldown, rCooldownImage);
+
+            if (isDashing) return;
+
+            if (input.sqrMagnitude <= 0.01f)
             {
-                if (Time.time >= nextEAttackTime)
-                {
-                    nextEAttackTime = Time.time + eCooldown;
-                    float finalDamage = eDamage + equipmentDamageBonus; // 최종 데미지 계산
-                    StartCoroutine(AttackRoutine(eAttackPrefab, finalDamage));
-                }
+                frameIndex = 0;
+                return;
             }
 
-            // ⭐ [수정]: 궁극기도 마찬가지로 아이템 보너스 데미지를 합산합니다!
-            if (Keyboard.current.rKey.wasPressedThisFrame && canMove && !isAttacking && !isDashing)
+            timer += Time.deltaTime;
+            if (timer >= frameTim)
             {
-                if (Time.time >= nextRAttackTime)
+                timer = 0f;
+                frameIndex++;
+                if (frameIndex >= currentSprites.Length) frameIndex = 0;
+                sr.sprite = currentSprites[frameIndex];
+                if (Time.time >= nextFootstepTime)
                 {
-                    nextRAttackTime = Time.time + rCooldown;
-                    float finalDamage = rDamage + equipmentDamageBonus; // 최종 데미지 계산
-                    StartCoroutine(AttackRoutine(rAttackPrefab, finalDamage));
+                    Soundmanager.Instance.PlayFootstep();
+                    nextFootstepTime = Time.time + footstepInterval;
                 }
             }
         }
-
-        UpdateCooldownUI(nextQAttackTime, qCooldown, qCooldownImage);
-        UpdateCooldownUI(nextEAttackTime, eCooldown, eCooldownImage);
-        UpdateCooldownUI(nextRAttackTime, rCooldown, rCooldownImage);
-
-        if (isDashing) return;
-
-        if (input.sqrMagnitude <= 0.01f)
-        {
-            frameIndex = 0;
-            return;
-        }
-
-        timer += Time.deltaTime;
-        if (timer >= frameTim)
-        {
-            timer = 0f;
-            frameIndex++;
-            if (frameIndex >= currentSprites.Length) frameIndex = 0;
-            sr.sprite = currentSprites[frameIndex];
-        }
-    }
 
     private void FixedUpdate()
     {
@@ -212,6 +222,9 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DashRoutine()
     {
         isDashing = true;
+
+        Soundmanager.Instance.PlayDashSound();
+
         StartCoroutine(DashGhostRoutine(dashDuration));
 
         rb.linearVelocity = lastMoveDirection * dashSpeed;
@@ -355,22 +368,22 @@ public class PlayerController : MonoBehaviour
             {
                 string itemName = coinItem.GetItemName();
                 int coinAmount = coinItem.GetCoin();
-                Debug.Log($"[인벤토리 체크] 아이템 정보 획득 성공 -> 이름: {itemName}, 코인 수량: {coinAmount}");
+              //  Debug.Log($"[인벤토리 체크] 아이템 정보 획득 성공 -> 이름: {itemName}, 코인 수량: {coinAmount}");
 
                 GameDataManager.Instance.playerData.collectedItems.Add(itemName);
                 GameDataManager.Instance.playerData.coin += coinAmount;
 
-                Debug.Log($"[인벤토리 체크] 데이터 매니저 저장 완료! 현재 소지품 개수: {GameDataManager.Instance.playerData.collectedItems.Count}개");
+              //  Debug.Log($"[인벤토리 체크] 데이터 매니저 저장 완료! 현재 소지품 개수: {GameDataManager.Instance.playerData.collectedItems.Count}개");
 
                 UI_ImageInventory imgInv = FindFirstObjectByType<UI_ImageInventory>();
                 if (imgInv != null)
                 {
-                    Debug.Log("[인벤토리 체크] UI_ImageInventory 스크립트를 찾았습니다! UI를 새로고침합니다.");
+                //    Debug.Log("[인벤토리 체크] UI_ImageInventory 스크립트를 찾았습니다! UI를 새로고침합니다.");
                     imgInv.UpdateInventoryUI();
                 }
                 else
                 {
-                    Debug.LogWarning("[인벤토리 체크 경고] 씬에 UI_ImageInventory 오브젝트가 없거나 꺼져있습니다!");
+                //    Debug.LogWarning("[인벤토리 체크 경고] 씬에 UI_ImageInventory 오브젝트가 없거나 꺼져있습니다!");
                 }
 
                 Destroy(collision.gameObject);

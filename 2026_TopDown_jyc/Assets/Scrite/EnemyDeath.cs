@@ -14,7 +14,7 @@ public class EnemyDeath : MonoBehaviour
    
 
     [Tooltip("숫자가 클수록 180도로 빠르게 뒤집힙니다.")]
-    [SerializeField] private float rotationSpeed = 2f;
+    [SerializeField] private float rotationSpeed = 10f;
 
     void Awake()
     {

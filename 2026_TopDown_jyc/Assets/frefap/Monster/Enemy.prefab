@@ -176,10 +176,13 @@ MonoBehaviour:
   isPlayer: 0
   isBoss: 0
   canKnockback: 0
+  useEnrageSystem: 1
   damageTextPrefab: {fileID: 3069542292569120090, guid: 8dc94cf1aaea5634ba41c5fd78546a39, type: 3}
-  itemPrefab: {fileID: 0}
+  coinPrefab: {fileID: 5439876178849196220, guid: 7775c95b9d733ef4eb55afaa0cd58858, type: 3}
+  potionPrefab: {fileID: 0}
+  gemPrefab: {fileID: 0}
   minDropCount: 1
-  maxDropCount: 3
+  maxDropCount: 1
   knockbackForce: 1
   knockbackDuration: 0.15
   spawnInvincibleDuration: 1

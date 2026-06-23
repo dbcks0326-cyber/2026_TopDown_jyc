@@ -47,3 +47,7 @@ MonoBehaviour:
   clipBGM: {fileID: 8300000, guid: 16f2185a75476c946977fc82b1d72fbe, type: 3}
   click: {fileID: 8300000, guid: b4cf439df703bb743b0fb1ab8f025d52, type: 3}
   Text: {fileID: 8300000, guid: ddcc9d7a14376de4993da391f4a0f80c, type: 3}
+  footstepClips:
+  - {fileID: 8300000, guid: 4def159f3abf99f4aa0a6d21edc14477, type: 3}
+  - {fileID: 8300000, guid: 54072b03933b8ac41aef382283fb17ff, type: 3}
+  - {fileID: 8300000, guid: 60af6ca8b7d520b429f1ddf6e87d3cdf, type: 3}

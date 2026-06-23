@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class EnemyHealth : Health
 {
+    
+
     [Header("보스 설정")]
     [SerializeField] private bool isBoss = false;
     [SerializeField] private bool canKnockback = false;
@@ -15,7 +17,10 @@ public class EnemyHealth : Health
     [SerializeField] private GameObject damageTextPrefab;
 
     [Header("몬스터 드롭 세팅")]
-    [SerializeField] private GameObject itemPrefab;
+    
+    [SerializeField] private GameObject coinPrefab;
+    [SerializeField] private GameObject potionPrefab;
+    [SerializeField] private GameObject gemPrefab;
     [SerializeField] private int minDropCount = 1;
     [SerializeField] private int maxDropCount = 3;
 
@@ -44,7 +49,7 @@ public class EnemyHealth : Health
 
             if (BossHPBar.Instance != null)
             {
-                BossHPBar.Instance.ShowHPBar();
+              //  BossHPBar.Instance.ShowHPBar();
             }
         }
 
@@ -139,22 +144,44 @@ public class EnemyHealth : Health
     // ⭐ 사망 처리 부분 수정 ⭐
     public override void Die()
     {
-        // 1. 아이템 드롭 (기존 코드 유지)
-        if (itemPrefab != null)
+        // 1. 아이템 드롭
+        int dropCount = Random.Range(minDropCount, maxDropCount + 1);
+
+        for (int i = 0; i < dropCount; i++)
         {
-            int dropCount = Random.Range(minDropCount, maxDropCount + 1);
+            Vector2 spawnOffset = new Vector2(
+                Random.Range(-0.1f, 0.1f),
+                Random.Range(-0.1f, 0.1f));
 
-            for (int i = 0; i < dropCount; i++)
+            Vector2 spawnPosition =
+                (Vector2)transform.position + spawnOffset;
+
+            float roll = Random.Range(0f, 100f);
+
+            GameObject dropItem = null;
+
+            // 80%
+            if (roll < 90f)
             {
-                Vector2 spawnOffset = new Vector2(
-                    Random.Range(-0.1f, 0.1f),
-                    Random.Range(-0.1f, 0.1f)
-                );
+                dropItem = coinPrefab;
+            }
+            // 15%
+            else if (roll < 90f)
+            {
+                dropItem = potionPrefab;
+            }
+            // 5%
+            else
+            {
+                dropItem = gemPrefab;
+            }
 
-                Vector2 spawnPosition =
-                    (Vector2)transform.position + spawnOffset;
-
-                Instantiate(itemPrefab, spawnPosition, Quaternion.identity);
+            if (dropItem != null)
+            {
+                Instantiate(
+                    dropItem,
+                    spawnPosition,
+                    Quaternion.identity);
             }
         }
 
