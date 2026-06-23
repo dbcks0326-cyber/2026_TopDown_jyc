@@ -1,0 +1,394 @@
+fileFormatVersion: 2
+guid: 002231acf19484c4eaa9f46cf955bc27
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4455778201564284120
+    second: "Skill_\uCD5C_0"
+  - first:
+      213: 7796988975330951047
+    second: "Skill_\uCD5C_1"
+  - first:
+      213: 4361205280777649083
+    second: "Skill_\uCD5C_2"
+  - first:
+      213: 8538903379962860057
+    second: "Skill_\uCD5C_3"
+  - first:
+      213: 899296549454212927
+    second: "Skill_\uCD5C_4"
+  - first:
+      213: 8103314570315066001
+    second: "Skill_\uCD5C_5"
+  - first:
+      213: 3177322939393984222
+    second: "Skill_\uCD5C_6"
+  - first:
+      213: -7068162674112904213
+    second: "Skill_\uCD5C_7"
+  - first:
+      213: -331230081910814694
+    second: "Skill_\uCD5C_8"
+  - first:
+      213: -4596111144585941688
+    second: "Skill_\uCD5C_9"
+  - first:
+      213: -1206860018962674515
+    second: "Skill_\uCD5C_10"
+  - first:
+      213: 5494249013488273719
+    second: "Skill_\uCD5C_11"
+  - first:
+      213: -940569522611617208
+    second: "Skill_\uCD5C_12"
+  - first:
+      213: 8931912078297280619
+    second: "Skill_\uCD5C_13"
+  - first:
+      213: 2532402638859562007
+    second: "Skill_\uCD5C_14"
+  - first:
+      213: -5263123436640764308
+    second: "Skill_\uCD5C_15"
+  - first:
+      213: 8239874400538099281
+    second: "Skill_\uCD5C_16"
+  - first:
+      213: 1403805405681111353
+    second: "Skill_\uCD5C_17"
+  - first:
+      213: -8586141362880917358
+    second: "Skill_\uCD5C_18"
+  - first:
+      213: 5058856735010903688
+    second: "Skill_\uCD5C_19"
+  - first:
+      213: -5771859047917696697
+    second: "Skill_\uCD5C_20"
+  - first:
+      213: 2686262256367015917
+    second: "Skill_\uCD5C_21"
+  - first:
+      213: 3278086551886104842
+    second: "Skill_\uCD5C_22"
+  - first:
+      213: -8312473946434468392
+    second: "Skill_\uCD5C_23"
+  - first:
+      213: -6947698755209678593
+    second: "Skill_\uCD5C_24"
+  - first:
+      213: 2586454531974795244
+    second: "Skill_\uCD5C_25"
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_0"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 448
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.5290892, y: 0.74435043}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82bf4d95555e922c0800000000000000
+      internalID: -4455778201564284120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_1"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 384
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.5290892, y: 0.72689676}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78ffc30b928743c60800000000000000
+      internalID: 7796988975330951047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_2"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 320
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.5290892, y: 0.72689724}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bbb3f41a81d168c30800000000000000
+      internalID: 4361205280777649083
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_3"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 256
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.51745343, y: 0.738533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 912911e0267408670800000000000000
+      internalID: 8538903379962860057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_4"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 192
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.5290892, y: 0.73271513}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3fe3f17271fa7c00800000000000000
+      internalID: 899296549454212927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_5"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 128
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.5232713, y: 0.7152617}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19a60e22ba1c47070800000000000000
+      internalID: 8103314570315066001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_6"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.5317071, y: 0.715611}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed64743116e181c20800000000000000
+      internalID: 3177322939393984222
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Skill_\uCD5C_7"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.5317071, y: 0.70292825}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be343d22f77d8ed90800000000000000
+      internalID: -7068162674112904213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 10dec00e450343743a8146a73dd9a909
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      "Skill_\uCD5C_0": -4455778201564284120
+      "Skill_\uCD5C_1": 7796988975330951047
+      "Skill_\uCD5C_2": 4361205280777649083
+      "Skill_\uCD5C_3": 8538903379962860057
+      "Skill_\uCD5C_4": 899296549454212927
+      "Skill_\uCD5C_5": 8103314570315066001
+      "Skill_\uCD5C_6": 3177322939393984222
+      "Skill_\uCD5C_7": -7068162674112904213
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

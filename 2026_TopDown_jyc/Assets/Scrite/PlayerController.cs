@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     public bool canMove = true;
     public float moveSpeed = 5f;
 
+
+
     private float equipmentSpeedBonus = 0f;
     // ⭐ [추가]: 아이템으로 증가할 공격력 보너스 변수
     private float equipmentDamageBonus = 0f;
@@ -45,6 +47,12 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private float footstepInterval = 0.3f;
+
+    [SerializeField]
+    private GameObject projectilePrefab;
+
+    [SerializeField]
+    private Transform firePoint;
 
     [Header("Q スキル設定 (대쉬)")]
     [SerializeField] private float dashSpeed = 15f;
@@ -175,8 +183,8 @@ public class PlayerController : MonoBehaviour
                     {
                         nextRAttackTime = Time.time + rCooldown;
                         float finalDamage = rDamage + equipmentDamageBonus; // 최종 데미지 계산
-                        StartCoroutine(AttackRoutine(rAttackPrefab, finalDamage));
-                    }
+                        StartCoroutine(ShootProjectileRoutine(finalDamage));
+                }
                 }
             }
 
@@ -240,32 +248,85 @@ public class PlayerController : MonoBehaviour
         {
             if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
             {
+                // 오른쪽
                 if (input.x > 0)
                 {
                     ChangeSprites(spriteRight);
-                    SetAllAttackTransforms(new Vector2(0.14f, -0.01f), new Vector3(0f, 0f, 90f));
+
+                    SetAllAttackTransforms(
+                        new Vector2(0.2f, -0.007f),
+                        new Vector3(0f, 0f, 90f));
+
+                    if (firePoint != null)
+                    {
+                        firePoint.localPosition =
+                            new Vector2(0.15f, -0.004f);
+
+                        firePoint.localRotation =
+                            Quaternion.Euler(0, 0, 0);
+                    }
                 }
+                // 왼쪽
                 else
                 {
                     ChangeSprites(spriteLeft);
-                    SetAllAttackTransforms(new Vector2(-0.14f, -0.01f), new Vector3(0f, 0f, 270f));
+
+                    SetAllAttackTransforms(
+                        new Vector2(-0.2f, -0.007f),
+                        new Vector3(0f, 0f, 270f));
+
+                    if (firePoint != null)
+                    {
+                        firePoint.localPosition =
+                            new Vector2(-0.15f, -0.004f);
+
+                        firePoint.localRotation =
+                            Quaternion.Euler(0, 0, 180);
+                    }
                 }
             }
             else
             {
+                // 위
                 if (input.y > 0)
                 {
                     ChangeSprites(spriteUp);
-                    SetAllAttackTransforms(new Vector2(0f, 0.14f), new Vector3(0f, 0f, 180f));
+
+                    SetAllAttackTransforms(
+                        new Vector2(-0.007f, 0.2f),
+                        new Vector3(0f, 0f, 180f));
+
+                    if (firePoint != null)
+                    {
+                        firePoint.localPosition =
+                            new Vector2(-0.004f, 0.15f);
+
+                        firePoint.localRotation =
+                            Quaternion.Euler(0, 0, 90);
+                    }
                 }
+                // 아래
                 else
                 {
                     ChangeSprites(spriteDown);
-                    SetAllAttackTransforms(new Vector2(0f, -0.14f), new Vector3(0f, 0f, 0f));
+
+                    SetAllAttackTransforms(
+                        new Vector2(-0.007f, -0.2f),
+                        new Vector3(0f, 0f, 0f));
+
+                    if (firePoint != null)
+                    {
+                        firePoint.localPosition =
+                            new Vector2(-0.004f, -0.15f);
+
+                        firePoint.localRotation =
+                            Quaternion.Euler(0, 0, -90);
+                    }
                 }
             }
         }
     }
+
 
     private void SetAllAttackTransforms(Vector2 pos, Vector3 rot)
     {
@@ -476,6 +537,49 @@ public class PlayerController : MonoBehaviour
 
             yield return new WaitForSeconds(ghostInterval);
             elapsed += ghostInterval;
+        }
+    }
+
+    private IEnumerator ShootProjectileRoutine(
+    float damage)
+    {
+        isAttacking = true;
+
+        // 캐스팅 이펙트
+        if (rAttackPrefab != null)
+        {
+            rAttackPrefab.SetActive(true);
+
+            yield return new WaitForSeconds(0.3f);
+
+            rAttackPrefab.SetActive(false);
+        }
+
+        GameObject proj =
+            Instantiate(
+                projectilePrefab,
+                firePoint.position,
+                Quaternion.identity);
+
+        Projectile projectile =
+            proj.GetComponent<Projectile>();
+
+        if (projectile != null)
+        {
+            projectile.Init(
+                lastMoveDirection,
+                damage);
+        }
+
+        isAttacking = false;
+    }
+
+    private void RotateFirePoint(float angle)
+    {
+        if (firePoint != null)
+        {
+            firePoint.rotation =
+                Quaternion.Euler(0, 0, angle);
         }
     }
 }
