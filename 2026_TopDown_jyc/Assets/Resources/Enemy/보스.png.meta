@@ -58,7 +58,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -96,7 +96,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -137,12 +137,12 @@ TextureImporter:
       name: "\uBCF4\uC2A4_0"
       rect:
         serializedVersion: 2
-        x: 8
-        y: 4
-        width: 61
-        height: 87
+        x: 0
+        y: 0
+        width: 96
+        height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -159,12 +159,12 @@ TextureImporter:
       name: "\uBCF4\uC2A4_1"
       rect:
         serializedVersion: 2
-        x: 103
-        y: 61
-        width: 20
-        height: 15
+        x: 96
+        y: 0
+        width: 96
+        height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -181,12 +181,12 @@ TextureImporter:
       name: "\uBCF4\uC2A4_2"
       rect:
         serializedVersion: 2
-        x: 104
-        y: 1
-        width: 61
-        height: 88
+        x: 192
+        y: 0
+        width: 96
+        height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -203,12 +203,12 @@ TextureImporter:
       name: "\uBCF4\uC2A4_3"
       rect:
         serializedVersion: 2
-        x: 198
-        y: 59
-        width: 21
-        height: 15
+        x: 288
+        y: 0
+        width: 96
+        height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -225,12 +225,12 @@ TextureImporter:
       name: "\uBCF4\uC2A4_4"
       rect:
         serializedVersion: 2
-        x: 200
+        x: 384
         y: 0
-        width: 61
-        height: 87
+        width: 96
+        height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -243,77 +243,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: "\uBCF4\uC2A4_5"
-      rect:
-        serializedVersion: 2
-        x: 294
-        y: 0
-        width: 63
-        height: 88
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a064c1c826a173ef0800000000000000
-      internalID: -128605053796989430
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: "\uBCF4\uC2A4_6"
-      rect:
-        serializedVersion: 2
-        x: 391
-        y: 62
-        width: 20
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c459f842ea36aceb0800000000000000
-      internalID: -4698833661618842292
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: "\uBCF4\uC2A4_7"
-      rect:
-        serializedVersion: 2
-        x: 392
-        y: 10
-        width: 61
-        height: 80
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 628f49a08984da3c0800000000000000
-      internalID: -4346738247492896730
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 1b3dd8e7083b00f45a75ede84d1e908e
     internalID: 0
     vertices: []
     indices: 
@@ -321,16 +255,15 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":96.0,"y":96.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       "\uBCF4\uC2A4_0": 1696201731974668380
       "\uBCF4\uC2A4_1": -5789067219887103814
       "\uBCF4\uC2A4_2": -9042232352066899656
       "\uBCF4\uC2A4_3": -6744503658114217371
       "\uBCF4\uC2A4_4": 721476592122828330
-      "\uBCF4\uC2A4_5": -128605053796989430
-      "\uBCF4\uC2A4_6": -4698833661618842292
-      "\uBCF4\uC2A4_7": -4346738247492896730
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

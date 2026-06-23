@@ -8,6 +8,9 @@ public class EnemyHealth : Health
     [SerializeField] private bool canKnockback = false;
     private SlimeBossController bossController;
 
+    [Header("폭주 시스템")]
+    [SerializeField] private bool useEnrageSystem = true;
+
     [Header("데미지 텍스트")]
     [SerializeField] private GameObject damageTextPrefab;
 
@@ -80,7 +83,10 @@ public class EnemyHealth : Health
             UpdateBossHealthUI();
         }
 
-        if (isBoss && bossController != null && !enrageUsed)
+        if (useEnrageSystem &&
+             isBoss &&
+              bossController != null &&
+             !enrageUsed)
         {
             float healthRatio = (float)currentHealth / maxHP;
 

@@ -179,6 +179,7 @@ MonoBehaviour:
   isPlayer: 0
   isBoss: 0
   canKnockback: 0
+  useEnrageSystem: 1
   damageTextPrefab: {fileID: 3069542292569120090, guid: 8dc94cf1aaea5634ba41c5fd78546a39, type: 3}
   itemPrefab: {fileID: 0}
   minDropCount: 1

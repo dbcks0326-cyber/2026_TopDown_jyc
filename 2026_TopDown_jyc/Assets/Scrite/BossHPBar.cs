@@ -25,11 +25,13 @@ public class BossHPBar : MonoBehaviour
 
     void Start()
     {
+        
         // 게임 시작할 땐 보스 피통 숨기기
         if (hpBarGroup != null) hpBarGroup.SetActive(false);
 
         // 🎮 [추가]: 게임 시작할 때는 보스방 문을 열어둡니다(꺼둡니다).
         if (bossRoomDoor != null) bossRoomDoor.SetActive(false);
+        
     }
 
     // 보스가 스폰될 때 호출

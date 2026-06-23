@@ -6,6 +6,7 @@ public class BossRoomTrigger : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        Debug.Log("sss");
         // 1. 이미 들어왔었거나, 부딪힌 오브젝트가 플레이어가 아니라면 무시합니다.
         if (hasTriggered) return;
 
