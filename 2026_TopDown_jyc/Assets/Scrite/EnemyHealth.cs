@@ -130,8 +130,10 @@ public class EnemyHealth : Health
         }
     }
 
+    // ⭐ 사망 처리 부분 수정 ⭐
     public override void Die()
     {
+        // 1. 아이템 드롭 (기존 코드 유지)
         if (itemPrefab != null)
         {
             int dropCount = Random.Range(minDropCount, maxDropCount + 1);
@@ -150,13 +152,25 @@ public class EnemyHealth : Health
             }
         }
 
+        // 2. 보스 UI 끄기 (기존 코드 유지)
         if (isBoss && BossHPBar.Instance != null)
         {
             BossHPBar.Instance.HideHPBar();
         }
 
-        base.Die();
+        // 3. [핵심] 부모의 base.Die()를 호출하면 오브젝트가 즉시 파괴되므로, 
+        // 부모 함수를 호출하는 대신 우리가 만든 사망 애니메이션(EnemyDeath)을 실행합니다!
+        if (TryGetComponent<EnemyDeath>(out EnemyDeath enemyDeath))
+        {
+            enemyDeath.Die();
+        }
+        else
+        {
+            // 만약 오브젝트에 EnemyDeath 컴포넌트가 없다면 먹통이 되지 않게 원래대로 즉시 파괴해 줍니다.
+            base.Die();
+        }
     }
+
     private void ShowDamageText(float damage)
     {
         if (damageTextPrefab == null)

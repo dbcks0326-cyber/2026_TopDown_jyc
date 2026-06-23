@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 4219218432820183459}
   - component: {fileID: 5639325904824760485}
   - component: {fileID: 1633514180335596133}
+  - component: {fileID: 6211204355753668649}
   m_Layer: 6
   m_Name: MiniMineSlime
   m_TagString: Enemy
@@ -323,3 +324,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &6211204355753668649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9045087686774966207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d13dc268b14548449d2f3e09b5b7102, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDeath
+  fadeSpeed: 2
+  shrinkDuration: 4
+  upwardForce: 0.2

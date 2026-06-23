@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 7413317097870324491}
   - component: {fileID: 7352097252931937941}
   - component: {fileID: 7476849140996783320}
+  - component: {fileID: -1840434391050103951}
   m_Layer: 6
   m_Name: MiniSlime
   m_TagString: Enemy
@@ -323,3 +324,17 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &-1840434391050103951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5942107137534589708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d13dc268b14548449d2f3e09b5b7102, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDeath
+  fadeSpeed: 2
+  rotationSpeed: 10

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3846240966380724802}
   - component: {fileID: 5545313821539641606}
   - component: {fileID: 7313936999848297395}
+  - component: {fileID: -172076074623523063}
   m_Layer: 6
   m_Name: SuperEnemy
   m_TagString: Enemy
@@ -253,6 +254,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-172076074623523063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 288758373020317116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d13dc268b14548449d2f3e09b5b7102, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDeath
+  fadeSpeed: 2
+  rotationSpeed: 10
 --- !u!1 &4204190177596469733
 GameObject:
   m_ObjectHideFlags: 0

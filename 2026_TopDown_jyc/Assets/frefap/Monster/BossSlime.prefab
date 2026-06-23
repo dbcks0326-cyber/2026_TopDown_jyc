@@ -265,6 +265,7 @@ GameObject:
   - component: {fileID: 8834552050942342145}
   - component: {fileID: 3710691574206958523}
   - component: {fileID: 3495764066691659016}
+  - component: {fileID: 4463124588052217421}
   m_Layer: 6
   m_Name: BossSlime
   m_TagString: Enemy
@@ -488,6 +489,20 @@ MonoBehaviour:
   crawlDuration: 1
   enrageDuration: 20
   groggyDuration: 7
+--- !u!114 &4463124588052217421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7606433918893477661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d13dc268b14548449d2f3e09b5b7102, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDeath
+  fadeSpeed: 2
+  rotationSpeed: 10
 --- !u!1 &9096691198021326301
 GameObject:
   m_ObjectHideFlags: 0
